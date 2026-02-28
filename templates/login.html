@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Control Cam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 flex items-center justify-center min-h-screen">
+
+<div class="bg-slate-800 p-8 rounded-xl shadow-lg w-96 border border-slate-700">
+
+    <h1 class="text-2xl text-white font-bold mb-6 text-center">Control Cam</h1>
+
+    <form method="POST" class="space-y-4">
+
+        <input type="text" name="username" placeholder="Usuário"
+               class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600 text-white">
+
+        <input type="password" name="senha" placeholder="Senha"
+               class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600 text-white">
+
+        <button type="submit"
+                class="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg">
+            Entrar
+        </button>
+
+    </form>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('registro') }}" class="text-slate-400 text-sm">
+            Criar conta
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

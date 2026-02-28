@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Control Cam • Editar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 min-h-screen">
+
+<div class="max-w-4xl mx-auto px-6 py-12">
+
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10">
+
+        <div>
+            <h1 class="text-3xl font-bold text-white">Editar Câmera</h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Atualização de informações cadastradas
+            </p>
+        </div>
+
+        <a href="{{ url_for('alteracoes') }}"
+           class="mt-6 md:mt-0 bg-slate-700 hover:bg-slate-600 text-white px-5 py-2 rounded-lg transition">
+            Voltar
+        </a>
+
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-lg p-8">
+
+        <form method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Nome -->
+            <div class="flex flex-col">
+                <label class="text-xs text-slate-400 mb-2 uppercase tracking-wide">
+                    Nome da Câmera
+                </label>
+                <input type="text" name="nome_camera" value="{{ camera[1] }}"
+                       class="p-3 rounded-lg bg-slate-900 border border-slate-600 text-white focus:outline-none focus:border-slate-400">
+            </div>
+
+            <!-- IP -->
+            <div class="flex flex-col">
+                <label class="text-xs text-slate-400 mb-2 uppercase tracking-wide">
+                    IP da Câmera
+                </label>
+                <input type="text" name="ip_camera" value="{{ camera[2] }}"
+                       class="p-3 rounded-lg bg-slate-900 border border-slate-600 text-white focus:outline-none focus:border-slate-400">
+            </div>
+
+            <!-- Caixa -->
+            <div class="flex flex-col">
+                <label class="text-xs text-slate-400 mb-2 uppercase tracking-wide">
+                    Caixa
+                </label>
+                <input type="text" name="caixa" value="{{ camera[3] }}"
+                       class="p-3 rounded-lg bg-slate-900 border border-slate-600 text-white focus:outline-none focus:border-slate-400">
+            </div>
+
+            <!-- MAC -->
+            <div class="flex flex-col">
+                <label class="text-xs text-slate-400 mb-2 uppercase tracking-wide">
+                    MAC Address
+                </label>
+                <input type="text" name="mac" value="{{ camera[6] }}"
+                       class="p-3 rounded-lg bg-slate-900 border border-slate-600 text-white focus:outline-none focus:border-slate-400">
+            </div>
+
+            <!-- Rua 1 -->
+            <div class="flex flex-col">
+                <label class="text-xs text-slate-400 mb-2 uppercase tracking-wide">
+                    Rua 1
+                </label>
+                <input type="text" name="rua1" value="{{ camera[4] }}"
+                       class="p-3 rounded-lg bg-slate-900 border border-slate-600 text-white focus:outline-none focus:border-slate-400">
+            </div>
+
+            <!-- Rua 2 -->
+            <div class="flex flex-col">
+                <label class="text-xs text-slate-400 mb-2 uppercase tracking-wide">
+                    Rua 2
+                </label>
+                <input type="text" name="rua2" value="{{ camera[5] }}"
+                       class="p-3 rounded-lg bg-slate-900 border border-slate-600 text-white focus:outline-none focus:border-slate-400">
+            </div>
+
+            <!-- BOTÕES -->
+            <div class="md:col-span-2 flex gap-4 pt-4">
+
+                <button type="submit"
+                        class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg transition">
+                    Salvar Alterações
+                </button>
+
+                <a href="{{ url_for('alteracoes') }}"
+                   class="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-3 rounded-lg text-center transition">
+                    Cancelar
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

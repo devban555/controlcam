@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Control Cam • Alterações</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 min-h-screen">
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
+
+        <div>
+            <h1 class="text-3xl font-bold text-white">Alterações de Câmeras</h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Gerenciamento e edição de registros
+            </p>
+        </div>
+
+        <a href="{{ url_for('index') }}"
+           class="mt-6 md:mt-0 bg-slate-700 hover:bg-slate-600 text-white px-5 py-2 rounded-lg transition">
+            Voltar ao Painel
+        </a>
+
+    </div>
+
+    <!-- TABELA -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-lg">
+
+        <div class="px-6 py-4 border-b border-slate-700">
+            <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wide">
+                Câmeras Cadastradas
+            </h2>
+        </div>
+
+        {% if cameras %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-slate-300">
+                <thead class="bg-slate-700 text-xs uppercase text-slate-400">
+                    <tr>
+                        <th class="px-6 py-3 text-left">ID</th>
+                        <th class="px-6 py-3 text-left">Nome</th>
+                        <th class="px-6 py-3 text-left">IP</th>
+                        <th class="px-6 py-3 text-left">Caixa</th>
+                        <th class="px-6 py-3 text-left">Ação</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for cam in cameras %}
+                    <tr class="border-b border-slate-700 hover:bg-slate-700/40 transition">
+
+                        <td class="px-6 py-4">
+                            {{ cam[0] }}
+                        </td>
+
+                        <td class="px-6 py-4 font-medium text-white">
+                            {{ cam[1] }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            {{ cam[2] }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            {{ cam[3] }}
+                        </td>
+
+                        <td class="px-6 py-4">
+                            <a href="{{ url_for('editar', id=cam[0]) }}"
+                               class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs transition">
+                                Editar
+                            </a>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="p-6 text-slate-400 text-sm">
+            Nenhuma câmera cadastrada.
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
