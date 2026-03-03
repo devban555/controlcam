@@ -71,10 +71,25 @@
                         </td>
 
                         <td class="px-6 py-4">
-                            <a href="{{ url_for('editar', id=cam[0]) }}"
-                               class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs transition">
-                                Editar
-                            </a>
+                            <div class="flex gap-3">
+
+                                <!-- EDITAR -->
+                                <a href="{{ url_for('editar', id=cam[0]) }}"
+                                   class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-xs transition">
+                                    Editar
+                                </a>
+
+                                <!-- APAGAR -->
+                                <form action="{{ url_for('apagar', id=cam[0]) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Tem certeza que deseja apagar esta câmera?');">
+                                    <button type="submit"
+                                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs transition">
+                                        Apagar
+                                    </button>
+                                </form>
+
+                            </div>
                         </td>
 
                     </tr>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Agentes</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 min-h-screen p-10">
+
+<div class="max-w-6xl mx-auto">
+<h1 class="text-2xl text-white mb-6">Agentes da Empresa</h1>
+
+<table class="w-full text-gray-300">
+<thead>
+<tr>
+<th>Nome</th>
+<th>IP Local</th>
+<th>Último Heartbeat</th>
+</tr>
+</thead>
+<tbody>
+{% for agente in agentes %}
+<tr class="border-b border-slate-700">
+<td>{{ agente.nome_maquina }}</td>
+<td>{{ agente.ip_local }}</td>
+<td>{{ agente.ultimo_heartbeat }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+</div>
+</body>
+</html>
