@@ -272,7 +272,23 @@ def alterar_empresa_usuario():
 
     return redirect(url_for("admin_dashboard"))
 
+@app.route("/admin/excluir_usuario/<int:usuario_id>")
+@login_required
+@admin_required
+def excluir_usuario(usuario_id):
 
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM usuarios WHERE id = %s",
+        (usuario_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("admin_dashboard"))
 #------------------------------------------------------------------------
 
 @app.route("/api/agent/heartbeat", methods=["POST"])

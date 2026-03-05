@@ -122,6 +122,7 @@ Usuários Cadastrados
 <th class="px-6 py-3 text-left">Usuário</th>
 <th class="px-6 py-3 text-left">Empresa</th>
 <th class="px-6 py-3 text-left">Alterar Empresa</th>
+<th class="px-6 py-3 text-left">Ações</th>
 </tr>
 </thead>
 
@@ -170,6 +171,16 @@ Salvar
 </button>
 
 </form>
+
+</td>
+
+<td class="px-6 py-4">
+
+<a href="{{ url_for('excluir_usuario', usuario_id=user.id) }}"
+class="bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white text-sm transition"
+onclick="return confirm('Deseja realmente excluir este usuário?')">
+Excluir
+</a>
 
 </td>
 
