@@ -10,55 +10,179 @@
 
 <div class="max-w-7xl mx-auto">
 
-<h1 class="text-3xl text-white font-bold mb-8">
+<h1 class="text-3xl text-white font-bold mb-6">
 Painel Administrativo Global
 </h1>
+
+<!-- BOTÕES ADMIN -->
+<div class="flex gap-4 mb-8">
+
+<a href="{{ url_for('registro') }}"
+class="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition">
+Cadastrar Usuário
+</a>
+
+</div>
 
 <!-- Criar Empresa -->
 <div class="bg-slate-800 p-6 rounded-xl mb-10">
 <form method="POST" action="{{ url_for('criar_empresa') }}">
-<input name="nome_empresa" placeholder="Nome da Empresa"
+
+<input name="nome_empresa"
+placeholder="Nome da Empresa"
 class="p-3 rounded bg-slate-700 text-white w-1/2">
-<button class="bg-blue-600 px-6 py-3 rounded text-white">
+
+<button class="bg-blue-600 px-6 py-3 rounded text-white ml-2">
 Criar Empresa
 </button>
+
 </form>
 </div>
 
 <!-- Lista Empresas -->
-<div class="bg-slate-800 p-6 rounded-xl">
-<table class="w-full text-gray-300">
-<thead>
-<tr class="border-b border-slate-600">
-<th>ID</th>
-<th>Empresa</th>
-<th>Token</th>
-<th>Ações</th>
+<div class="bg-slate-800 p-6 rounded-xl mb-10">
+
+<h2 class="text-xl text-white mb-4">
+Empresas
+</h2>
+
+<div class="overflow-x-auto">
+
+<table class="w-full text-sm text-slate-300">
+
+<thead class="bg-slate-700 text-xs uppercase text-slate-400">
+<tr>
+<th class="px-6 py-3 text-left">ID</th>
+<th class="px-6 py-3 text-left">Empresa</th>
+<th class="px-6 py-3 text-left">Token</th>
+<th class="px-6 py-3 text-left">Ações</th>
 </tr>
 </thead>
+
 <tbody>
+
 {% for empresa in empresas %}
-<tr class="border-b border-slate-700">
-<td>{{ empresa.id }}</td>
-<td>{{ empresa.nome_empresa }}</td>
-<td class="text-xs">{{ empresa.token_api }}</td>
-<td class="space-x-2">
+<tr class="border-b border-slate-700 hover:bg-slate-700/40 transition">
+
+<td class="px-6 py-4">
+{{ empresa.id }}
+</td>
+
+<td class="px-6 py-4 font-medium text-white">
+{{ empresa.nome_empresa }}
+</td>
+
+<td class="px-6 py-4 text-xs text-slate-400 break-all">
+{{ empresa.token_api }}
+</td>
+
+<td class="px-6 py-4">
+
+<div class="flex items-center gap-2">
+
 <a href="{{ url_for('ver_agentes', empresa_id=empresa.id) }}"
-class="bg-green-600 px-3 py-1 rounded text-white text-sm">
+class="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-white text-sm transition">
 Agentes
 </a>
 
 <a href="{{ url_for('excluir_empresa', empresa_id=empresa.id) }}"
-class="bg-red-600 px-3 py-1 rounded text-white text-sm">
+class="bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-white text-sm transition">
 Excluir
 </a>
+
+</div>
+
 </td>
+
 </tr>
 {% endfor %}
+
 </tbody>
+
 </table>
+
 </div>
 
 </div>
+
+<!-- USUÁRIOS CADASTRADOS -->
+<div class="bg-slate-800 p-6 rounded-xl mt-10">
+
+<h2 class="text-xl text-white mb-4">
+Usuários Cadastrados
+</h2>
+
+<div class="overflow-x-auto">
+
+<table class="w-full text-sm text-slate-300">
+
+<thead class="bg-slate-700 text-xs uppercase text-slate-400">
+<tr>
+<th class="px-6 py-3 text-left">ID</th>
+<th class="px-6 py-3 text-left">Usuário</th>
+<th class="px-6 py-3 text-left">Empresa</th>
+<th class="px-6 py-3 text-left">Alterar Empresa</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for user in usuarios %}
+<tr class="border-b border-slate-700 hover:bg-slate-700/40 transition">
+
+<td class="px-6 py-4">
+{{ user.id }}
+</td>
+
+<td class="px-6 py-4 font-medium text-white">
+{{ user.username }}
+</td>
+
+<td class="px-6 py-4">
+{{ user.nome_empresa }}
+</td>
+
+<td class="px-6 py-4">
+
+<form method="POST"
+action="{{ url_for('alterar_empresa_usuario') }}"
+class="flex items-center gap-2">
+
+<input type="hidden"
+name="usuario_id"
+value="{{ user.id }}">
+
+<select name="empresa_id"
+class="bg-slate-700 text-white px-3 py-1 rounded text-sm">
+
+{% for emp in empresas %}
+<option value="{{ emp.id }}"
+{% if emp.id == user.empresa_id %}selected{% endif %}>
+{{ emp.nome_empresa }}
+</option>
+{% endfor %}
+
+</select>
+
+<button
+class="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-white text-sm transition">
+Salvar
+</button>
+
+</form>
+
+</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
 </body>
 </html>

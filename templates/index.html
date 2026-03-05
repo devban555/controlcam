@@ -16,11 +16,19 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
 
-        <div>
-            <h1 class="text-3xl font-bold text-white">Control Cam</h1>
-            <p class="text-slate-400 text-sm mt-1">
-                Monitoramento em tempo real • Atualização automática 30s
-            </p>
+        <div class="flex items-center gap-6">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Control Cam</h1>
+                <p class="text-slate-400 text-sm mt-1">
+                    Monitoramento em tempo real • Atualização automática 30s
+                </p>
+            </div>
+
+            <!-- BOTÃO LOGOUT -->
+            <a href="{{ url_for('logout') }}"
+                class="bg-red-600 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition duration-200">
+                Sair
+            </a>
         </div>
 
         <!-- Resumo -->

@@ -122,28 +122,55 @@ init_db()
 #------------------------------------------------------------------------
 #-----Rotas do Admin Global
 
+from werkzeug.security import generate_password_hash
+
 @app.route("/admin")
 @login_required
 @admin_required
 def admin_dashboard():
-    conn = conn = get_db()
+
+    conn = get_db()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    cursor.execute("SELECT * FROM empresas ORDER BY id DESC")
+    # empresas
+    cursor.execute("""
+        SELECT id, nome_empresa, token_api
+        FROM empresas
+        ORDER BY id DESC
+    """)
     empresas = cursor.fetchall()
+
+    # usuarios
+    cursor.execute("""
+        SELECT usuarios.id,
+               usuarios.username,
+               usuarios.empresa_id,
+               empresas.nome_empresa
+        FROM usuarios
+        LEFT JOIN empresas
+        ON usuarios.empresa_id = empresas.id
+        ORDER BY usuarios.id DESC
+    """)
+    usuarios = cursor.fetchall()
 
     conn.close()
 
-    return render_template("admin.html", empresas=empresas)
+    return render_template(
+        "admin.html",
+        empresas=empresas,
+        usuarios=usuarios
+    )
+
 
 @app.route("/admin/criar_empresa", methods=["POST"])
 @login_required
 @admin_required
 def criar_empresa():
+
     nome = request.form.get("nome_empresa")
     token = secrets.token_hex(32)
 
-    conn = conn = get_db()
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -156,31 +183,36 @@ def criar_empresa():
 
     return redirect(url_for("admin_dashboard"))
 
+
 @app.route("/admin/excluir_empresa/<int:empresa_id>")
 @login_required
 @admin_required
 def excluir_empresa(empresa_id):
-    conn = conn = get_db()
+
+    conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM empresas WHERE id = %s", (empresa_id,))
+    cursor.execute(
+        "DELETE FROM empresas WHERE id = %s",
+        (empresa_id,)
+    )
 
     conn.commit()
     conn.close()
 
     return redirect(url_for("admin_dashboard"))
 
-from werkzeug.security import generate_password_hash
 
 @app.route("/admin/criar_usuario", methods=["POST"])
 @login_required
 @admin_required
 def criar_usuario():
+
     empresa_id = request.form.get("empresa_id")
     username = request.form.get("username")
     senha = generate_password_hash(request.form.get("senha"))
 
-    conn = conn = get_db()
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -193,15 +225,18 @@ def criar_usuario():
 
     return redirect(url_for("admin_dashboard"))
 
+
 @app.route("/admin/agentes/<int:empresa_id>")
 @login_required
 @admin_required
 def ver_agentes(empresa_id):
-    conn = conn = get_db()
+
+    conn = get_db()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     cursor.execute("""
-        SELECT * FROM agentes
+        SELECT *
+        FROM agentes
         WHERE empresa_id = %s
         ORDER BY ultimo_heartbeat DESC
     """, (empresa_id,))
@@ -210,7 +245,32 @@ def ver_agentes(empresa_id):
 
     conn.close()
 
-    return render_template("admin_agentes.html", agentes=agentes)
+    return render_template(
+        "admin_agentes.html",
+        agentes=agentes
+    )
+
+@app.route("/alterar_empresa_usuario", methods=["POST"])
+def alterar_empresa_usuario():
+
+    usuario_id = request.form.get("usuario_id")
+    empresa_id = request.form.get("empresa_id")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET empresa_id = %s
+        WHERE id = %s
+    """, (empresa_id, usuario_id))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("admin_dashboard"))
 
 
 #------------------------------------------------------------------------
@@ -459,7 +519,7 @@ def registro():
         cursor.close()
         conn.close()
 
-        return redirect(url_for("login"))
+        return redirect(url_for("admin_dashboard"))
 
     return render_template("registro.html")
 
