@@ -1,154 +1,203 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Control Cam</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Control Cam</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <meta http-equiv="refresh" content="10">
+<script src="https://cdn.tailwindcss.com"></script>
+<meta http-equiv="refresh" content="10">
 </head>
 
 <body class="bg-slate-900 min-h-screen">
 
 <div class="max-w-7xl mx-auto px-6 py-10">
 
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
 
-        <div class="flex items-center gap-6">
-            <div>
-                <h1 class="text-3xl font-bold text-white">Control Cam</h1>
-                <p class="text-slate-400 text-sm mt-1">
-                    Monitoramento em tempo real • Atualização automática 30s
-                </p>
-            </div>
+<div>
+<h1 class="text-3xl font-bold text-white">Control Cam</h1>
+<p class="text-slate-400 text-sm mt-1">
+Monitoramento em tempo real • Atualização automática 30s
+</p>
+</div>
 
-            <!-- BOTÃO LOGOUT -->
-            <a href="{{ url_for('logout') }}"
-                class="bg-red-600 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition duration-200">
-                Sair
-            </a>
-        </div>
+<!-- RESUMO -->
+<div class="flex gap-8 mt-6 md:mt-0 items-center">
 
-        <!-- Resumo -->
-        <div class="flex gap-6 mt-6 md:mt-0">
-            {% set online = cameras | selectattr("status", "equalto", "Online") | list | length %}
-            {% set total = cameras | length %}
-            {% set offline = total - online %}
+{% set online = cameras | selectattr("status", "equalto", "Online") | list | length %}
+{% set total = cameras | length %}
+{% set offline = total - online %}
 
-            <div class="text-center">
-                <p class="text-xs text-slate-400">Online</p>
-                <p class="text-lg font-semibold text-green-400">{{ online }}</p>
-            </div>
+<div class="text-center">
+<p class="text-xs text-slate-400">Online</p>
+<p class="text-lg font-semibold text-green-400">{{ online }}</p>
+</div>
 
-            <div class="text-center">
-                <p class="text-xs text-slate-400">Offline</p>
-                <p class="text-lg font-semibold text-red-400">{{ offline }}</p>
-            </div>
+<div class="text-center">
+<p class="text-xs text-slate-400">Offline</p>
+<p class="text-lg font-semibold text-red-400">{{ offline }}</p>
+</div>
 
-            <div class="text-center">
-                <p class="text-xs text-slate-400">Total</p>
-                <p class="text-lg font-semibold text-white">{{ total }}</p>
-            </div>
-        </div>
+<div class="text-center">
+<p class="text-xs text-slate-400">Total</p>
+<p class="text-lg font-semibold text-white">{{ total }}</p>
+</div>
 
-    </div>
+<!-- STATUS AGENTE -->
+<div class="text-center border-l border-slate-700 pl-6">
+<p class="text-xs text-slate-400">Agente</p>
 
-    <!-- BOTÕES PADRONIZADOS -->
-    <div class="flex flex-wrap gap-4 mb-12">
+{% if agente_status == "ON" %}
+<p class="flex items-center justify-center gap-2 text-green-400 font-semibold">
+<span class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
+ON
+</p>
+{% else %}
+<p class="flex items-center justify-center gap-2 text-red-400 font-semibold">
+<span class="w-3 h-3 bg-red-400 rounded-full"></span>
+OFF
+</p>
+{% endif %}
+</div>
 
-        <a href="{{ url_for('cadastro') }}"
-           class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-            Cadastro
-        </a>
+<!-- BOTÃO SAIR -->
+<div class="border-l border-slate-700 pl-6">
+<a href="{{ url_for('logout') }}"
+class="bg-red-600 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition duration-200">
+Sair
+</a>
+</div>
 
-        <a href="{{ url_for('teste') }}"
-           class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-            Teste
-        </a>
+</div>
 
-        <a href="{{ url_for('pesquisa') }}"
-           class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-            Pesquisa
-        </a>
+</div>
 
-        <a href="{{ url_for('alteracoes') }}"
-           class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-            Alterações
-        </a>
+<!-- BOTÕES -->
+<div class="flex flex-wrap gap-4 mb-12">
 
-    </div>
+<a href="{{ url_for('cadastro') }}"
+class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
+Cadastro
+</a>
 
-    <!-- TABELA -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg">
+<a href="{{ url_for('teste') }}"
+class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
+Teste
+</a>
 
-        <div class="px-6 py-4 border-b border-slate-700">
-            <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wide">
-                Câmeras Cadastradas
-            </h2>
-        </div>
+<a href="{{ url_for('pesquisa') }}"
+class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
+Pesquisa
+</a>
 
-        {% if cameras %}
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-slate-300">
-                <thead class="bg-slate-700 text-xs uppercase text-slate-400">
-                    <tr>
-                        <th class="px-6 py-3 text-left">Nome</th>
-                        <th class="px-6 py-3 text-left">IP</th>
-                        <th class="px-6 py-3 text-left">Caixa</th>
-                        <th class="px-6 py-3 text-left">Status</th>
-                        <th class="px-6 py-3 text-left">Latência</th>
-                    </tr>
-                </thead>
+<a href="{{ url_for('alteracoes') }}"
+class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
+Alterações
+</a>
 
-                <tbody>
-                    {% for cam in cameras %}
-                    <tr class="border-b border-slate-700 hover:bg-slate-700/40 transition">
+</div>
 
-                        <td class="px-6 py-4 font-medium text-white">
-                            {{ cam.nome }}
-                        </td>
+<!-- TABELA -->
+<div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg">
 
-                        <td class="px-6 py-4">
-                            {{ cam.ip }}
-                        </td>
+<div class="px-6 py-4 border-b border-slate-700">
+<h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wide">
+Câmeras Cadastradas
+</h2>
+</div>
 
-                        <td class="px-6 py-4">
-                            {{ cam.caixa }}
-                        </td>
+{% if cameras %}
 
-                        <td class="px-6 py-4">
-                            {% if cam.status == "Online" %}
-                                <span class="flex items-center gap-2 text-green-400">
-                                    <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                    Online
-                                </span>
-                            {% else %}
-                                <span class="flex items-center gap-2 text-red-400">
-                                    <span class="w-2 h-2 bg-red-400 rounded-full"></span>
-                                    Offline
-                                </span>
-                            {% endif %}
-                        </td>
+<div class="overflow-x-auto">
 
-                        <td class="px-6 py-4">
-                            {{ cam.latencia }}
-                        </td>
+<table class="w-full text-sm text-slate-300">
 
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<thead class="bg-slate-700 text-xs uppercase text-slate-400">
+<tr>
+<th class="px-6 py-3 text-left">Nome</th>
+<th class="px-6 py-3 text-left">IP</th>
+<th class="px-6 py-3 text-left">Caixa</th>
+<th class="px-6 py-3 text-left">Status</th>
+<th class="px-6 py-3 text-left">Latência</th>
+</tr>
+</thead>
 
-        {% else %}
-        <div class="p-6 text-slate-400 text-sm">
-            Nenhuma câmera cadastrada.
-        </div>
-        {% endif %}
+<tbody>
 
-    </div>
+{% for cam in cameras %}
+
+<tr class="border-b border-slate-700 hover:bg-slate-700/40 transition">
+
+<td class="px-6 py-4 font-medium text-white">
+{{ cam.nome }}
+</td>
+
+<td class="px-6 py-4">
+{{ cam.ip }}
+</td>
+
+<td class="px-6 py-4">
+{{ cam.caixa }}
+</td>
+
+<td class="px-6 py-4">
+
+{% if cam.status == "Online" %}
+
+<span class="flex items-center gap-2 text-green-400">
+<span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+Online
+</span>
+
+{% elif cam.status == "Offline" %}
+
+<span class="flex items-center gap-2 text-red-400">
+<span class="w-2 h-2 bg-red-400 rounded-full"></span>
+Offline
+</span>
+
+{% elif cam.status == "Desconhecido" %}
+
+<span class="flex items-center gap-2 text-yellow-400">
+<span class="w-2 h-2 bg-yellow-400 rounded-full"></span>
+Sem comunicação
+</span>
+
+{% else %}
+
+<span class="text-slate-400">
+Sem teste
+</span>
+
+{% endif %}
+
+</td>
+
+<td class="px-6 py-4">
+{{ cam.latencia }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% else %}
+
+<div class="p-6 text-slate-400 text-sm">
+Nenhuma câmera cadastrada.
+</div>
+
+{% endif %}
+
+</div>
 
 </div>
 

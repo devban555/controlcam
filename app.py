@@ -294,7 +294,13 @@ def excluir_usuario(usuario_id):
 @app.route("/api/agent/heartbeat", methods=["POST"])
 def agent_heartbeat():
 
+    # aceitar token via header OU JSON
+    data = request.get_json(silent=True)
+
     token = request.headers.get("Authorization")
+
+    if not token and data and "token" in data:
+        token = data["token"]
 
     if not token:
         return jsonify({"error": "Token ausente"}), 401
@@ -316,8 +322,32 @@ def agent_heartbeat():
 
     empresa_id = empresa[0]
 
-    nome_maquina = request.json.get("nome_maquina")
-    ip_local = request.json.get("ip_local")
+    cursor.execute("""
+        SELECT ultimo_heartbeat
+        FROM agentes
+        WHERE empresa_id = %s
+        ORDER BY ultimo_heartbeat DESC
+        LIMIT 1
+    """, (empresa_id,))
+
+    agente = cursor.fetchone()
+
+    agente_status = "OFF"
+
+    if agente:
+        ultimo = agente[0]
+        agora = datetime.datetime.now()
+
+        if (agora - ultimo).total_seconds() < 30:
+            agente_status = "ON"
+
+    # usar JSON seguro
+    nome_maquina = None
+    ip_local = None
+
+    if data:
+        nome_maquina = data.get("nome_maquina")
+        ip_local = data.get("ip_local")
 
     agora = datetime.datetime.now()
 
@@ -358,6 +388,7 @@ def agent_heartbeat():
     """, (agente_id,))
 
     comando = cursor.fetchone()
+
     print("AGENTE_ID:", agente_id)
     print("COMANDO BRUTO:", comando)
 
@@ -612,6 +643,26 @@ def index():
 
     empresa_id = usuario[0]
 
+    # 🔎 STATUS DO AGENTE
+    agente_status = "OFF"
+
+    cursor.execute("""
+        SELECT ultimo_heartbeat
+        FROM agentes
+        WHERE empresa_id = %s
+        ORDER BY ultimo_heartbeat DESC
+        LIMIT 1
+    """, (empresa_id,))
+
+    agente = cursor.fetchone()
+
+    if agente and agente[0]:
+        agora = datetime.datetime.now()
+        delta = agora - agente[0]
+
+        if delta.total_seconds() < 60:
+            agente_status = "ON"
+
     # 🔎 Buscar câmeras da empresa
     cursor.execute("""
         SELECT id, nome_camera, ip_camera, caixa
@@ -627,7 +678,7 @@ def index():
 
         ip = cam[2]
 
-        # 🔎 Buscar último comando executado da empresa para este IP
+        # 🔎 Buscar último comando executado
         cursor.execute("""
             SELECT resultado, executado_em
             FROM comandos
@@ -643,19 +694,29 @@ def index():
         status = "Sem teste"
         latencia = "-"
 
-        if comando:
-            resultado_texto = comando[0]
+        # 🚨 se agente estiver OFF não confiar no último ping
+        if agente_status == "OFF":
 
-            if resultado_texto and "TTL=" in resultado_texto:
-                status = "Online"
+            status = "Desconhecido"
+            latencia = "-"
 
-                match = re.search(r'tempo[=<](\d+)', resultado_texto)
-                if match:
-                    latencia = match.group(1) + " ms"
-            else:
-                status = "Offline"
+        else:
 
-        # 🔎 Verificar se já existe comando ativo para esse IP
+            if comando:
+                resultado_texto = comando[0]
+
+                # compatível Windows e Linux
+                if resultado_texto and "ttl=" in resultado_texto.lower():
+                    status = "Online"
+
+                    match = re.search(r'tempo[=<](\d+)', resultado_texto)
+                    if match:
+                        latencia = match.group(1) + " ms"
+
+                else:
+                    status = "Offline"
+
+        # 🔎 Verificar comando ativo
         cursor.execute("""
             SELECT id FROM comandos
             WHERE alvo = %s
@@ -666,7 +727,7 @@ def index():
 
         comando_ativo = cursor.fetchone()
 
-        # 🚀 Criar novo comando apenas se não houver ativo
+        # 🚀 Criar novo comando se necessário
         if not comando_ativo:
 
             cursor.execute("""
@@ -698,7 +759,11 @@ def index():
     cursor.close()
     conn.close()
 
-    return render_template("index.html", cameras=lista_cameras)
+    return render_template(
+        "index.html",
+        cameras=lista_cameras,
+        agente_status=agente_status
+    )
 
 @app.route("/cadastro", methods=["GET", "POST"])
 @login_required
@@ -775,7 +840,7 @@ def pesquisa():
     conn = get_db()
     cursor = conn.cursor()
 
-    # 🔎 Buscar empresa do usuário logado
+    # empresa do usuário
     cursor.execute(
         "SELECT empresa_id FROM usuarios WHERE id = %s",
         (session["usuario_id"],)
@@ -794,16 +859,20 @@ def pesquisa():
         termo = request.form.get("termo")
 
         cursor.execute("""
-            SELECT id, nome_camera, ip_camera, caixa
+            SELECT id, nome_camera, ip_camera, caixa, rua1, rua2
             FROM cameras
             WHERE empresa_id = %s
-              AND (
-                    nome_camera ILIKE %s
-                 OR ip_camera ILIKE %s
-                 OR caixa ILIKE %s
-              )
+            AND (
+                nome_camera ILIKE %s
+                OR ip_camera ILIKE %s
+                OR caixa ILIKE %s
+                OR rua1 ILIKE %s
+                OR rua2 ILIKE %s
+            )
         """, (
             empresa_id,
+            f"%{termo}%",
+            f"%{termo}%",
             f"%{termo}%",
             f"%{termo}%",
             f"%{termo}%"
@@ -837,6 +906,26 @@ def teste():
 
     empresa_id = usuario[0]
 
+    # 🔎 STATUS DO AGENTE
+    agente_status = "OFF"
+
+    cursor.execute("""
+        SELECT ultimo_heartbeat
+        FROM agentes
+        WHERE empresa_id = %s
+        ORDER BY ultimo_heartbeat DESC
+        LIMIT 1
+    """, (empresa_id,))
+
+    agente = cursor.fetchone()
+
+    if agente and agente[0]:
+        agora = datetime.datetime.now()
+        delta = agora - agente[0]
+
+        if delta.total_seconds() < 60:
+            agente_status = "ON"
+
     # 🔎 Listar caixas da empresa
     cursor.execute("""
         SELECT DISTINCT caixa
@@ -852,6 +941,43 @@ def teste():
     if request.method == "POST":
 
         tipo = request.form.get("tipo")
+
+        # 🚨 se agente OFF não executar testes
+        if agente_status == "OFF":
+
+            if tipo == "ip":
+                ip = request.form.get("ip_manual")
+                if ip:
+                    resultados.append(("Teste", ip, "Sem comunicação", "-"))
+
+            elif tipo == "caixa":
+                caixa = request.form.get("caixa")
+
+                cursor.execute("""
+                    SELECT ip_camera
+                    FROM cameras
+                    WHERE caixa = %s
+                      AND empresa_id = %s
+                """, (caixa, empresa_id))
+
+                for row in cursor.fetchall():
+                    resultados.append(("Teste", row[0], "Sem comunicação", "-"))
+
+            elif tipo == "geral":
+
+                cursor.execute("""
+                    SELECT ip_camera
+                    FROM cameras
+                    WHERE empresa_id = %s
+                """, (empresa_id,))
+
+                for row in cursor.fetchall():
+                    resultados.append(("Teste", row[0], "Sem comunicação", "-"))
+
+            cursor.close()
+            conn.close()
+
+            return render_template("teste.html", caixas=caixas, resultados=resultados)
 
         # 🔎 Buscar agente da empresa
         cursor.execute(
@@ -930,7 +1056,7 @@ def teste():
 
                 resultado_texto = comando[0]
 
-                if "TTL=" in resultado_texto:
+                if "ttl=" in resultado_texto.lower():
                     status = "Online"
                     match = re.search(r'tempo[=<](\d+)', resultado_texto)
                     if match:

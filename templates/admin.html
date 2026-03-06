@@ -10,9 +10,18 @@
 
 <div class="max-w-7xl mx-auto">
 
-<h1 class="text-3xl text-white font-bold mb-6">
+<div class="flex items-center justify-between mb-6">
+
+<h1 class="text-3xl text-white font-bold">
 Painel Administrativo Global
 </h1>
+
+<a href="{{ url_for('logout') }}"
+class="bg-red-600 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+Sair
+</a>
+
+</div>
 
 <!-- BOTÕES ADMIN -->
 <div class="flex gap-4 mb-8">
