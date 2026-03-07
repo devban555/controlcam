@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+
+<meta charset="UTF-8">
+<title>Relatório Offline</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="bg-slate-900 min-h-screen">
+
+<div class="max-w-6xl mx-auto px-6 py-10">
+
+<h1 class="text-2xl text-white font-bold mb-8">
+Relatório de Câmeras Offline
+</h1>
+
+<div class="bg-slate-800 rounded-xl border border-slate-700">
+
+{% if cameras %}
+
+<div class="overflow-x-auto">
+
+<table class="w-full text-sm text-slate-300">
+
+<thead class="bg-slate-700 text-xs uppercase text-slate-400">
+
+<tr>
+<th class="px-6 py-3 text-left">Nome</th>
+<th class="px-6 py-3 text-left">IP</th>
+<th class="px-6 py-3 text-left">Caixa</th>
+<th class="px-6 py-3 text-left">Status</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for cam in cameras %}
+
+<tr class="border-b border-slate-700 hover:bg-slate-700/40 transition">
+
+<td class="px-6 py-4 text-white font-medium">
+{{ cam.nome }}
+</td>
+
+<td class="px-6 py-4">
+{{ cam.ip }}
+</td>
+
+<td class="px-6 py-4">
+{{ cam.caixa }}
+</td>
+
+<td class="px-6 py-4 text-red-400 font-semibold">
+Offline
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% else %}
+
+<div class="p-6 text-green-400">
+Nenhuma câmera offline.
+</div>
+
+{% endif %}
+
+</div>
+
+<div class="mt-6 flex gap-3">
+
+<a href="{{ url_for('index') }}"
+class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg">
+Voltar
+</a>
+
+<a href="{{ url_for('relatorio_pdf') }}"
+class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg">
+Exportar PDF
+</a>
+
+</div>
+
+</div>
+
+</body>
+</html>

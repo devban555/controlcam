@@ -9,6 +9,10 @@ from flask import jsonify
 import datetime
 from psycopg2.extras import RealDictCursor
 from flask import jsonify
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from flask import send_file
+import io
 
 token = secrets.token_hex(32)
 
@@ -1117,6 +1121,217 @@ def alteracoes():
     conn.close()
 
     return render_template("alteracoes.html", cameras=cameras)
+
+@app.route("/relatorio")
+@login_required
+def relatorio():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        (session["usuario_id"],)
+    )
+    usuario = cursor.fetchone()
+
+    if not usuario:
+        cursor.close()
+        conn.close()
+        return redirect(url_for("logout"))
+
+    empresa_id = usuario[0]
+
+    cursor.execute("""
+        SELECT id, nome_camera, ip_camera, caixa
+        FROM cameras
+        WHERE empresa_id = %s
+    """, (empresa_id,))
+
+    cameras = cursor.fetchall()
+
+    lista_offline = []
+
+    for cam in cameras:
+
+        ip = cam[2]
+
+        cursor.execute("""
+            SELECT resultado
+            FROM comandos
+            WHERE alvo = %s
+              AND empresa_id = %s
+              AND status = 'executado'
+            ORDER BY id DESC
+            LIMIT 1
+        """, (ip, empresa_id))
+
+        comando = cursor.fetchone()
+
+        status = "Offline"
+
+        if comando:
+            resultado = comando[0]
+
+            if resultado and "ttl=" in resultado.lower():
+                status = "Online"
+
+        if status == "Offline":
+
+            lista_offline.append({
+                "nome": cam[1],
+                "ip": ip,
+                "caixa": cam[3]
+            })
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "relatorio.html",
+        cameras=lista_offline
+    )
+
+@app.route("/relatorio/pdf")
+@login_required
+def relatorio_pdf():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        (session["usuario_id"],)
+    )
+    usuario = cursor.fetchone()
+
+    if not usuario:
+        cursor.close()
+        conn.close()
+        return redirect(url_for("logout"))
+
+    empresa_id = usuario[0]
+
+    cursor.execute("""
+        SELECT id, nome_camera, ip_camera, caixa
+        FROM cameras
+        WHERE empresa_id = %s
+    """, (empresa_id,))
+    cameras = cursor.fetchall()
+
+    lista_offline = []
+
+    for cam in cameras:
+
+        ip = cam[2]
+
+        cursor.execute("""
+            SELECT resultado
+            FROM comandos
+            WHERE alvo = %s
+              AND empresa_id = %s
+              AND status = 'executado'
+            ORDER BY id DESC
+            LIMIT 1
+        """, (ip, empresa_id))
+
+        comando = cursor.fetchone()
+
+        status = "Offline"
+
+        if comando:
+            resultado = comando[0]
+
+            if resultado and "ttl=" in resultado.lower():
+                status = "Online"
+
+        if status == "Offline":
+
+            lista_offline.append({
+                "nome": cam[1],
+                "ip": ip,
+                "caixa": cam[3]
+            })
+
+    cursor.close()
+    conn.close()
+
+    # -------- GERAR PDF --------
+
+    buffer = io.BytesIO()
+
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+
+    largura, altura = A4
+
+    y = altura - 40
+
+    # Título
+    pdf.setFont("Helvetica-Bold", 18)
+    pdf.drawString(40, y, "Relatório de Câmeras Offline")
+
+    y -= 25
+
+    # Data
+    pdf.setFont("Helvetica", 10)
+    data = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    pdf.drawString(40, y, f"Gerado em: {data}")
+
+    y -= 20
+
+    # Total
+    pdf.drawString(40, y, f"Total de câmeras offline: {len(lista_offline)}")
+
+    y -= 30
+
+    # Cabeçalho da tabela
+    pdf.setFont("Helvetica-Bold", 11)
+
+    pdf.drawString(40, y, "Nome")
+    pdf.drawString(250, y, "IP")
+    pdf.drawString(380, y, "Caixa")
+    pdf.drawString(460, y, "Status")
+
+    y -= 15
+
+    pdf.setFont("Helvetica", 10)
+
+    for cam in lista_offline:
+
+        if y < 50:
+
+            pdf.showPage()
+
+            y = altura - 40
+
+            pdf.setFont("Helvetica-Bold", 11)
+
+            pdf.drawString(40, y, "Nome")
+            pdf.drawString(250, y, "IP")
+            pdf.drawString(380, y, "Caixa")
+            pdf.drawString(460, y, "Status")
+
+            y -= 20
+
+            pdf.setFont("Helvetica", 10)
+
+        pdf.drawString(40, y, cam["nome"])
+        pdf.drawString(250, y, cam["ip"])
+        pdf.drawString(380, y, str(cam["caixa"]))
+        pdf.drawString(460, y, "Offline")
+
+        y -= 18
+
+    pdf.save()
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="relatorio_cameras_offline.pdf",
+        mimetype="application/pdf"
+    )
 
 @app.route("/editar/<int:id>", methods=["GET", "POST"])
 @login_required
