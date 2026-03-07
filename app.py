@@ -694,7 +694,6 @@ def index():
         status = "Sem teste"
         latencia = "-"
 
-        # 🚨 se agente estiver OFF não confiar no último ping
         if agente_status == "OFF":
 
             status = "Desconhecido"
@@ -705,7 +704,6 @@ def index():
             if comando:
                 resultado_texto = comando[0]
 
-                # compatível Windows e Linux
                 if resultado_texto and "ttl=" in resultado_texto.lower():
                     status = "Online"
 
@@ -754,28 +752,29 @@ def index():
             "status": status,
             "latencia": latencia
         })
-        # 🔴 ORDENAR STATUS (OFFLINE PRIMEIRO)
-        prioridade_status = {
-            "Offline": 0,
-            "Desconhecido": 1,
-            "Sem teste": 2,
-            "Online": 3
-        }
 
-        lista_cameras = sorted(
-            lista_cameras,
-            key=lambda c: prioridade_status.get(c["status"], 99)
-        )
+    # 🔴 ORDENAR STATUS (OFFLINE PRIMEIRO)
+    prioridade_status = {
+        "Offline": 0,
+        "Desconhecido": 1,
+        "Sem teste": 2,
+        "Online": 3
+    }
 
-        conn.commit()
-        cursor.close()
-        conn.close()
+    lista_cameras = sorted(
+        lista_cameras,
+        key=lambda c: prioridade_status.get(c["status"], 99)
+    )
 
-        return render_template(
-            "index.html",
-            cameras=lista_cameras,
-            agente_status=agente_status
-        )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "index.html",
+        cameras=lista_cameras,
+        agente_status=agente_status
+    )
 
 @app.route("/cadastro", methods=["GET", "POST"])
 @login_required
