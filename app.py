@@ -754,16 +754,28 @@ def index():
             "status": status,
             "latencia": latencia
         })
+        # 🔴 ORDENAR STATUS (OFFLINE PRIMEIRO)
+        prioridade_status = {
+            "Offline": 0,
+            "Desconhecido": 1,
+            "Sem teste": 2,
+            "Online": 3
+        }
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        lista_cameras = sorted(
+            lista_cameras,
+            key=lambda c: prioridade_status.get(c["status"], 99)
+        )
 
-    return render_template(
-        "index.html",
-        cameras=lista_cameras,
-        agente_status=agente_status
-    )
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return render_template(
+            "index.html",
+            cameras=lista_cameras,
+            agente_status=agente_status
+        )
 
 @app.route("/cadastro", methods=["GET", "POST"])
 @login_required
