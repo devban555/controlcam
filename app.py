@@ -1,23 +1,22 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import os
 import subprocess
 import re
 import secrets
-from flask import jsonify
 import datetime
 from psycopg2.extras import RealDictCursor
-from flask import jsonify
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-from flask import send_file
 import io
 
 token = secrets.token_hex(32)
 
 app = Flask(__name__)
+frames_cache = {}
 app.secret_key = "controlcam_secret_key"
+
 
 def admin_required(f):
     @wraps(f)
@@ -383,7 +382,7 @@ def agent_heartbeat():
 
     # buscar comando pendente
     cursor.execute("""
-        SELECT id, tipo, alvo
+        SELECT id, tipo, alvo, resultado
         FROM comandos
         WHERE agente_id = %s
           AND status = 'pendente'
@@ -397,7 +396,7 @@ def agent_heartbeat():
     print("COMANDO BRUTO:", comando)
 
     if comando:
-        comando_id, tipo, alvo = comando
+        comando_id, tipo, alvo, resultado = comando
 
         cursor.execute("""
             UPDATE comandos
@@ -414,7 +413,8 @@ def agent_heartbeat():
             "comando": {
                 "id": comando_id,
                 "tipo": tipo,
-                "alvo": alvo
+                "alvo": alvo,
+                "resultado": resultado
             }
         })
 
@@ -780,6 +780,141 @@ def index():
         agente_status=agente_status
     )
 
+@app.route("/stream")
+@login_required
+def stream():
+
+    caixa = request.args.get("caixa")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # empresa do usuário
+    cursor.execute(
+        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        (session["usuario_id"],)
+    )
+    empresa_id = cursor.fetchone()[0]
+
+    # caixas disponíveis
+    cursor.execute("""
+        SELECT DISTINCT caixa
+        FROM cameras
+        WHERE empresa_id = %s
+        ORDER BY caixa
+    """, (empresa_id,))
+    caixas = [c[0] for c in cursor.fetchall()]
+
+    # buscar câmeras
+    if caixa:
+        cursor.execute("""
+            SELECT nome_camera, ip_camera, usuario, senha, stream_path, caixa
+            FROM cameras
+            WHERE empresa_id = %s AND caixa = %s
+            ORDER BY nome_camera
+        """, (empresa_id, caixa))
+    else:
+        cursor.execute("""
+            SELECT nome_camera, ip_camera, usuario, senha, stream_path, caixa
+            FROM cameras
+            WHERE empresa_id = %s
+            ORDER BY nome_camera
+        """, (empresa_id,))
+
+    cameras_db = cursor.fetchall()
+
+    # 🔥 BUSCAR AGENTE
+    cursor.execute("""
+        SELECT id FROM agentes
+        WHERE empresa_id = %s
+        ORDER BY ultimo_heartbeat DESC
+        LIMIT 1
+    """, (empresa_id,))
+    agente = cursor.fetchone()
+
+    agente_id = agente[0] if agente else None
+
+    cameras = []
+    agora = datetime.datetime.now()
+
+    for cam in cameras_db:
+
+        nome = cam[0]
+        ip = cam[1]
+        usuario = cam[2] or "admin"
+        senha = cam[3] or ""
+        stream_path = cam[4] or "/cam/realmonitor?channel=1&subtype=1"
+        caixa_cam = cam[5]
+
+        # 🔥 ID SEGURO (SEM ESPAÇO)
+        safe_nome = nome.replace(" ", "_")
+
+        # 🔥 MONTA RTSP
+        rtsp = f"rtsp://{usuario}:{senha}@{ip}:554{stream_path}"
+
+        # 🔥 DISPARA COMANDO FRAME
+        if agente_id:
+            cursor.execute("""
+                INSERT INTO comandos
+                (empresa_id, agente_id, tipo, alvo, resultado, criado_em)
+                VALUES (%s, %s, 'frame', %s, %s, %s)
+            """, (empresa_id, agente_id, safe_nome, rtsp, agora))
+
+
+
+        cameras.append({
+            "nome": safe_nome,  # 🔥 IMPORTANTE
+            "url": f"/video/{safe_nome}",
+            "caixa": caixa_cam
+        })
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    online = 0
+    offline = 0
+    total = len(cameras)
+
+    agente_status = True if agente_id else False
+
+    return render_template(
+        "stream.html",
+        cameras=cameras,
+        caixas=caixas,
+        caixa_selecionada=caixa,
+        online=online,
+        offline=offline,
+        total=total,
+        agente=agente_status
+    )
+
+@app.route("/video/<camera_id>")
+def video(camera_id):
+
+    import time
+
+    def generate():
+        while True:
+
+            frame = frames_cache.get(camera_id)
+
+            if not frame:
+                # 🔥 evita loop travado quando ainda não chegou frame
+                time.sleep(0.05)
+                continue
+
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+            # 🔥 controla FPS do navegador (~20-30 FPS máx)
+            time.sleep(0.03)
+
+    return Response(
+        generate(),
+        mimetype='multipart/x-mixed-replace; boundary=frame'
+    )
+
 @app.route("/cadastro", methods=["GET", "POST"])
 @login_required
 def cadastro():
@@ -792,6 +927,11 @@ def cadastro():
         rua1 = request.form.get("rua1")
         rua2 = request.form.get("rua2")
         mac = request.form.get("mac")
+        stream_path = request.form.get("stream_path")
+
+        # NOVOS CAMPOS
+        usuario = request.form.get("usuario")
+        senha = request.form.get("senha")
 
         conn = get_db()
         cursor = conn.cursor()
@@ -801,20 +941,31 @@ def cadastro():
             "SELECT empresa_id FROM usuarios WHERE id = %s",
             (session["usuario_id"],)
         )
-        usuario = cursor.fetchone()
+        usuario_logado = cursor.fetchone()
 
-        if not usuario:
+        if not usuario_logado:
             cursor.close()
             conn.close()
             return redirect(url_for("logout"))
 
-        empresa_id = usuario[0]
+        empresa_id = usuario_logado[0]
 
         try:
             cursor.execute("""
                 INSERT INTO cameras
-                (nome_camera, ip_camera, caixa, rua1, rua2, mac, empresa_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (
+                    nome_camera,
+                    ip_camera,
+                    caixa,
+                    rua1,
+                    rua2,
+                    mac,
+                    usuario,
+                    senha,
+                    stream_path,
+                    empresa_id
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 nome_camera,
                 ip_camera,
@@ -822,6 +973,9 @@ def cadastro():
                 rua1,
                 rua2,
                 mac,
+                usuario,
+                senha,
+                stream_path,
                 empresa_id
             ))
 
@@ -1109,7 +1263,16 @@ def alteracoes():
 
     # Buscar somente câmeras da empresa
     cursor.execute("""
-        SELECT id, nome_camera, ip_camera, caixa
+        SELECT 
+            id,
+            nome_camera,
+            ip_camera,
+            caixa,
+            rua1,
+            rua2,
+            mac,
+            usuario,
+            senha
         FROM cameras
         WHERE empresa_id = %s
         ORDER BY id DESC
@@ -1363,6 +1526,10 @@ def editar(id):
         rua2 = request.form.get("rua2")
         mac = request.form.get("mac")
 
+        # NOVOS CAMPOS
+        usuario_cam = request.form.get("usuario")
+        senha_cam = request.form.get("senha")
+
         try:
             cursor.execute("""
                 UPDATE cameras
@@ -1371,7 +1538,9 @@ def editar(id):
                     caixa = %s,
                     rua1 = %s,
                     rua2 = %s,
-                    mac = %s
+                    mac = %s,
+                    usuario = %s,
+                    senha = %s
                 WHERE id = %s
                   AND empresa_id = %s
             """, (
@@ -1381,6 +1550,8 @@ def editar(id):
                 rua1,
                 rua2,
                 mac,
+                usuario_cam,
+                senha_cam,
                 id,
                 empresa_id
             ))
@@ -1399,7 +1570,16 @@ def editar(id):
 
     # GET
     cursor.execute("""
-        SELECT id, nome_camera, ip_camera, caixa, rua1, rua2, mac
+        SELECT 
+            id,
+            nome_camera,
+            ip_camera,
+            caixa,
+            rua1,
+            rua2,
+            mac,
+            usuario,
+            senha
         FROM cameras
         WHERE id = %s
           AND empresa_id = %s
@@ -1449,6 +1629,27 @@ def apagar(id):
     conn.close()
 
     return redirect(url_for("alteracoes"))
+
+#rota do agente
+
+@app.route("/api/agent/stream", methods=["POST"])
+def receber_stream():
+
+    token = request.headers.get("Authorization")
+
+    if not token:
+        return "erro", 401
+
+    camera_id = request.form.get("camera_id")
+    frame = request.files.get("frame")
+
+    if not frame:
+        return "sem frame", 400
+
+    frames_cache[camera_id] = frame.read()
+
+    return "ok"
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,78 +1,112 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Cadastro de Câmera</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Cadastro de Câmera</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen flex items-center justify-center">
 
-    <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-10 w-full max-w-3xl">
+<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-10 w-full max-w-3xl">
 
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-white">Cadastro de Câmera</h1>
+<div class="flex justify-between items-center mb-8">
+<h1 class="text-2xl font-bold text-white">Cadastro de Câmera</h1>
 
-            <a href="{{ url_for('index') }}" 
-               class="text-sm bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
-                Voltar
-            </a>
-        </div>
+<a href="{{ url_for('index') }}"
+class="text-sm bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
+Voltar
+</a>
+</div>
 
-        <form method="POST" class="space-y-6">
+<form method="POST" class="space-y-6">
 
-            <div>
-                <label class="text-gray-300 text-sm">Nome da Câmera</label>
-                <input type="text" name="nome_camera" required
-                       class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-            </div>
+<div>
+<label class="text-gray-300 text-sm">Nome da Câmera</label>
+<input type="text" name="nome_camera" required
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+</div>
 
-            <div>
-                <label class="text-gray-300 text-sm">IP da Câmera</label>
-                <input type="text" name="ip_camera" required
-                       class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-            </div>
+<div>
+<label class="text-gray-300 text-sm">IP da Câmera</label>
+<input type="text" name="ip_camera" required
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+</div>
 
-            <div>
-                <label class="text-gray-300 text-sm">Caixa</label>
-                <input type="text" name="caixa"
-                       class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-            </div>
+<!-- STREAM PATH -->
+<div>
+<label class="text-gray-300 text-sm">Stream Path</label>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="text-gray-300 text-sm">Rua 1</label>
-                    <input type="text" name="rua1"
-                           class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-                </div>
+<input type="text"
+name="stream_path"
+value="/cam/realmonitor?channel=1&subtype=1"
+placeholder="/cam/realmonitor?channel=1&subtype=1"
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
 
-                <div>
-                    <label class="text-gray-300 text-sm">Rua 2</label>
-                    <input type="text" name="rua2"
-                           class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-                </div>
-            </div>
+<p class="text-xs text-slate-400 mt-1">
+Padrão Intelbras/Dahua. Altere apenas se a câmera usar outro formato RTSP.
+</p>
+</div>
 
-            <div>
-                <label class="text-gray-300 text-sm">MAC Address</label>
-                <input type="text" name="mac"
-                       class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-            </div>
+<!-- LOGIN DA CAMERA -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <div class="pt-4">
-                <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition">
-                    Salvar Cadastro
-                </button>
-            </div>
+<div>
+<label class="text-gray-300 text-sm">Usuário da Câmera</label>
+<input type="text" name="usuario"
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+</div>
 
-        </form>
+<div>
+<label class="text-gray-300 text-sm">Senha da Câmera</label>
+<input type="text" name="senha"
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+</div>
 
-    </div>
+</div>
+
+<div>
+<label class="text-gray-300 text-sm">Caixa</label>
+<input type="text" name="caixa"
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+<div>
+<label class="text-gray-300 text-sm">Rua 1</label>
+<input type="text" name="rua1"
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+</div>
+
+<div>
+<label class="text-gray-300 text-sm">Rua 2</label>
+<input type="text" name="rua2"
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+</div>
+
+</div>
+
+<div>
+<label class="text-gray-300 text-sm">MAC Address</label>
+<input type="text" name="mac"
+class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+</div>
+
+<div class="pt-4">
+<button type="submit"
+class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition">
+Salvar Cadastro
+</button>
+</div>
+
+</form>
+
+</div>
 
 </body>
 </html>

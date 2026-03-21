@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Control Cam • Stream</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-900 min-h-screen text-white">
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+<!-- HEADER STATUS -->
+
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+
+<h1 class="text-3xl font-bold">
+Stream de Câmeras
+</h1>
+
+<div class="flex flex-wrap items-center gap-4">
+
+<div class="bg-slate-800 px-4 py-2 rounded-lg text-center">
+<div class="text-xs text-slate-400">Online</div>
+<div class="text-green-400 text-lg font-bold">
+{{ online }}
+</div>
+</div>
+
+<div class="bg-slate-800 px-4 py-2 rounded-lg text-center">
+<div class="text-xs text-slate-400">Offline</div>
+<div class="text-red-400 text-lg font-bold">
+{{ offline }}
+</div>
+</div>
+
+<div class="bg-slate-800 px-4 py-2 rounded-lg text-center">
+<div class="text-xs text-slate-400">Total</div>
+<div class="text-white text-lg font-bold">
+{{ total }}
+</div>
+</div>
+
+<div class="bg-slate-800 px-4 py-2 rounded-lg text-center">
+<div class="text-xs text-slate-400">Agente</div>
+
+{% if agente %}
+<div class="text-green-400 font-bold">ON</div>
+{% else %}
+<div class="text-red-400 font-bold">OFF</div>
+{% endif %}
+
+</div>
+
+<a href="{{ url_for('index') }}"
+class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg">
+Voltar
+</a>
+
+</div>
+
+</div>
+
+<!-- FILTRO -->
+
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
+
+<div class="flex items-center gap-4">
+
+<form method="GET">
+
+<select name="caixa"
+class="bg-slate-800 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none">
+
+<option value="">Todas as caixas</option>
+
+{% for c in caixas %}
+<option value="{{ c }}"
+{% if caixa_selecionada == c %}selected{% endif %}>
+{{ c }}
+</option>
+{% endfor %}
+
+</select>
+
+<button type="submit"
+class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg">
+Filtrar
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<!-- CAMERA EM DESTAQUE -->
+
+{% if request.args.get('cam') %}
+
+<div class="flex justify-center mb-12">
+
+<div class="bg-black border border-slate-700 rounded-lg overflow-hidden w-[900px] shadow-xl">
+
+<div class="px-4 py-2 bg-slate-800 flex justify-between items-center">
+
+<span class="text-sm">
+Câmera em destaque
+</span>
+
+<a href="/stream"
+class="text-red-400 hover:text-red-300 text-sm">
+Fechar
+</a>
+
+</div>
+
+<img src="/video/{{ request.args.get('cam') }}" class="w-full">
+
+</div>
+
+</div>
+
+{% endif %}
+
+<!-- GRID STREAM -->
+
+<div class="flex justify-center">
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+{% for cam in cameras %}
+
+<div class="bg-black rounded-lg overflow-hidden border border-slate-700 shadow-lg hover:scale-105 transition">
+
+<div class="px-3 py-2 text-xs bg-slate-800 text-slate-300 flex justify-between items-center">
+
+<span>
+{{ cam.nome }} • {{ cam.caixa }}
+</span>
+
+<a href="?cam={{ cam.nome }}"
+class="text-blue-400 hover:text-blue-300 text-xs">
+Expandir
+</a>
+
+</div>
+
+<img src="/video/{{ cam.nome }}" class="w-full">
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
