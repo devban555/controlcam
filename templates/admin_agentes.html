@@ -1,35 +1,136 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Agentes</title>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <title>Control Cam | Monitoramento de Agentes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #e2e8f0; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+        }
+
+        .status-pill {
+            @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border;
+        }
+    </style>
 </head>
 
-<body class="bg-slate-900 min-h-screen p-10">
+<body class="min-h-screen p-6 md:p-12">
 
-<div class="max-w-6xl mx-auto">
-<h1 class="text-2xl text-white mb-6">Agentes da Empresa</h1>
+    <div class="max-w-6xl mx-auto">
 
-<table class="w-full text-gray-300">
-<thead>
-<tr>
-<th>Nome</th>
-<th>IP Local</th>
-<th>Último Heartbeat</th>
-</tr>
-</thead>
-<tbody>
-{% for agente in agentes %}
-<tr class="border-b border-slate-700">
-<td>{{ agente.nome_maquina }}</td>
-<td>{{ agente.ip_local }}</td>
-<td>{{ agente.ultimo_heartbeat }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+        <header class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="bg-emerald-600/20 text-emerald-500 p-2 rounded-xl text-xl shadow-lg shadow-emerald-900/20">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">Agentes</h1>
+                </div>
+                <p class="text-slate-500 font-medium">Monitoramento de sincronismo e telemetria dos coletores</p>
+            </div>
 
-</div>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-xl border border-slate-700 transition-all font-bold text-sm">
+                <i class="fa-solid fa-chevron-left text-[10px]"></i> Voltar ao Admin
+            </a>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="glass-card p-6 border-emerald-500/10">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Total de Máquinas</p>
+                <p class="text-3xl font-black text-white font-mono">{{ agentes|length }}</p>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Protocolo</p>
+                <p class="text-xl font-bold text-blue-400">RTSP Over Agent</p>
+            </div>
+            <div class="glass-card p-6">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Frequência Heartbeat</p>
+                <p class="text-xl font-bold text-slate-300">60 segundos</p>
+            </div>
+        </div>
+
+        <div class="glass-card overflow-hidden shadow-2xl">
+            <div class="px-8 py-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+                <h2 class="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-emerald-500"></i> Status do Parque Tecnológico
+                </h2>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-white/5 bg-slate-900/40">
+                            <th class="px-8 py-4">Nome da Máquina</th>
+                            <th class="px-8 py-4">Endereço IP Local</th>
+                            <th class="px-8 py-4">Última Comunicação</th>
+                            <th class="px-8 py-4 text-right">Estado Atual</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for agente in agentes %}
+                        <tr class="hover:bg-white/[0.02] transition-colors group">
+                            <td class="px-8 py-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-slate-800 rounded-lg text-slate-500 group-hover:text-emerald-400 transition-colors">
+                                        <i class="fa-solid fa-desktop text-xs"></i>
+                                    </div>
+                                    <span class="font-bold text-white text-sm">{{ agente.nome_maquina }}</span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-5 font-mono text-xs text-blue-400">
+                                {{ agente.ip_local or '---.---.---.---' }}
+                            </td>
+                            <td class="px-8 py-5 font-mono text-xs text-slate-400">
+                                <i class="fa-regular fa-clock mr-2 text-[10px]"></i>
+                                {{ agente.ultimo_heartbeat or 'Sem registro' }}
+                            </td>
+                            <td class="px-8 py-5 text-right">
+                                {% if agente.ultimo_heartbeat %}
+                                    <span class="status-pill bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                        Sincronizado
+                                    </span>
+                                {% else %}
+                                    <span class="status-pill bg-red-500/10 text-red-500 border-red-500/20">
+                                        <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                        Desconectado
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if not agentes %}
+            <div class="py-20 flex flex-col items-center justify-center text-slate-600 gap-3">
+                <i class="fa-solid fa-ghost text-4xl opacity-20"></i>
+                <p class="text-sm font-medium italic">Nenhum agente reportando para esta empresa.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-8 flex items-center justify-center gap-6 text-slate-600">
+            <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Online
+            </div>
+            <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                <span class="w-2 h-2 bg-red-500 rounded-full"></span> Offline (> 5min)
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

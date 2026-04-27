@@ -1,214 +1,178 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Control Cam</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Control Cam | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta http-equiv="refresh" content="10">
 
-<script src="https://cdn.tailwindcss.com"></script>
-<meta http-equiv="refresh" content="10">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); }
+        .status-card { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.05); }
+        .btn-nav { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-nav:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
+    </style>
 </head>
 
-<body class="bg-slate-900 min-h-screen">
+<body class="bg-[#0f172a] text-slate-200 min-h-screen">
 
-<div class="max-w-7xl mx-auto px-6 py-10">
+<div class="max-w-7xl mx-auto px-4 md:px-8 py-8">
 
-<!-- Header -->
-<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
+    <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+        <div>
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-lg shadow-lg shadow-blue-900/20">
+                    <i class="fa-solid fa-shield-halved text-white text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold tracking-tight text-white">Control Cam</h1>
+            </div>
+            <p class="text-slate-500 text-sm mt-1 font-medium">
+                Monitoramento Operacional <span class="mx-2 text-slate-700">•</span> v1.0.0.1
+            </p>
+        </div>
 
-<div>
-<h1 class="text-3xl font-bold text-white">Control Cam</h1>
-<p class="text-slate-400 text-sm mt-1">
-Monitoramento em tempo real • version 1.0.0.1
-</p>
-</div>
+        <div class="flex flex-wrap items-center gap-4 lg:gap-8">
+            {% set online = cameras | selectattr("status", "equalto", "Online") | list | length %}
+            {% set total = cameras | length %}
+            {% set offline = total - online %}
 
-<!-- RESUMO -->
-<div class="flex gap-8 mt-6 md:mt-0 items-center">
+            <div class="flex gap-6 bg-slate-800/40 p-4 rounded-2xl border border-slate-700/50">
+                <div class="text-center px-2">
+                    <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Total</p>
+                    <p class="text-xl font-bold text-white">{{ total }}</p>
+                </div>
+                <div class="text-center border-x border-slate-700/50 px-6">
+                    <p class="text-[10px] uppercase tracking-wider text-green-500 font-bold">Online</p>
+                    <p class="text-xl font-bold text-green-400">{{ online }}</p>
+                </div>
+                <div class="text-center px-2">
+                    <p class="text-[10px] uppercase tracking-wider text-red-500 font-bold">Offline</p>
+                    <p class="text-xl font-bold text-red-400">{{ offline }}</p>
+                </div>
+            </div>
 
-{% set online = cameras | selectattr("status", "equalto", "Online") | list | length %}
-{% set total = cameras | length %}
-{% set offline = total - online %}
+            <div class="flex items-center gap-4 border-l border-slate-800 pl-4 lg:pl-8">
+                <div class="flex flex-col items-end mr-2">
+                    <span class="text-[10px] uppercase text-slate-500 font-bold">Agente</span>
+                    {% if agente_status == "ON" %}
+                        <span class="text-green-400 font-bold text-sm flex items-center gap-1.5">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span> ON
+                        </span>
+                    {% else %}
+                        <span class="text-red-500 font-bold text-sm flex items-center gap-1.5">
+                            <span class="h-2 w-2 rounded-full bg-red-500"></span> OFF
+                        </span>
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="bg-slate-800 hover:bg-red-600 hover:text-white text-slate-400 p-3 rounded-xl transition-all border border-slate-700">
+                    <i class="fa-solid fa-power-off"></i>
+                </a>
+            </div>
+        </div>
+    </header>
 
-<div class="text-center">
-<p class="text-xs text-slate-400">Online</p>
-<p class="text-lg font-semibold text-green-400">{{ online }}</p>
-</div>
+    <nav class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+        <a href="{{ url_for('stream.stream') }}" class="btn-nav flex flex-col items-center justify-center gap-2 bg-blue-600 p-4 rounded-2xl text-white shadow-lg shadow-blue-900/20">
+            <i class="fa-solid fa-video text-xl"></i>
+            <span class="text-xs font-bold uppercase tracking-wider">Stream</span>
+        </a>
 
-<div class="text-center">
-<p class="text-xs text-slate-400">Offline</p>
-<p class="text-lg font-semibold text-red-400">{{ offline }}</p>
-</div>
+        {% set nav_links = [
+            ('main.cadastro', 'fa-plus', 'Cadastro'),
+            ('main.teste', 'fa-vial', 'Teste'),
+            ('main.pesquisa', 'fa-magnifying-glass', 'Pesquisa'),
+            ('main.alteracoes', 'fa-pen-to-square', 'Alterações'),
+            ('main.relatorio', 'fa-file-lines', 'Relatório')
+        ] %}
 
-<div class="text-center">
-<p class="text-xs text-slate-400">Total</p>
-<p class="text-lg font-semibold text-white">{{ total }}</p>
-</div>
+        {% for route, icon, label in nav_links %}
+        <a href="{{ url_for(route) }}" class="btn-nav flex flex-col items-center justify-center gap-2 bg-slate-800/60 border border-slate-700/50 p-4 rounded-2xl hover:bg-slate-700/80">
+            <i class="fa-solid {{ icon }} text-slate-400 text-xl"></i>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">{{ label }}</span>
+        </a>
+        {% endfor %}
+    </nav>
 
-<!-- STATUS AGENTE -->
-<div class="text-center border-l border-slate-700 pl-6">
-<p class="text-xs text-slate-400">Agente</p>
+    <div class="glass rounded-3xl border border-slate-700/50 shadow-2xl overflow-hidden">
+        <div class="px-8 py-6 border-b border-slate-700/50 flex justify-between items-center bg-slate-800/30">
+            <h2 class="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-blue-500"></i> Dispositivos Cadastrados
+            </h2>
+            <span class="text-[10px] bg-slate-700 px-3 py-1 rounded-full text-slate-400 font-bold uppercase">Auto-refresh ativo</span>
+        </div>
 
-{% if agente_status == "ON" %}
-<p class="flex items-center justify-center gap-2 text-green-400 font-semibold">
-<span class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
-ON
-</p>
-{% else %}
-<p class="flex items-center justify-center gap-2 text-red-400 font-semibold">
-<span class="w-3 h-3 bg-red-400 rounded-full"></span>
-OFF
-</p>
-{% endif %}
-</div>
-
-<!-- BOTÃO SAIR -->
-<div class="border-l border-slate-700 pl-6">
-<a href="{{ url_for('logout') }}"
-class="bg-red-600 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition duration-200">
-Sair
-</a>
-</div>
-
-</div>
-
-</div>
-
-<!-- BOTÕES -->
-<div class="flex flex-wrap gap-4 mb-12">
-
-<a href="{{ url_for('stream') }}"
-class="flex-1 min-w-[180px] text-center bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-lg transition duration-200">
-STREAM
-</a>
-
-<a href="{{ url_for('cadastro') }}"
-class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-Cadastro
-</a>
-
-<a href="{{ url_for('teste') }}"
-class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-Teste
-</a>
-
-<a href="{{ url_for('pesquisa') }}"
-class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-Pesquisa
-</a>
-
-<a href="{{ url_for('alteracoes') }}"
-class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-Alterações
-</a>
-
-<a href="{{ url_for('relatorio') }}"
-class="flex-1 min-w-[180px] text-center bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 rounded-lg transition duration-200">
-Relatório
-</a>
-
-</div>
-
-<!-- TABELA -->
-<div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg">
-
-<div class="px-6 py-4 border-b border-slate-700">
-<h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wide">
-Câmeras Cadastradas
-</h2>
-</div>
-
-{% if cameras %}
-
-<div class="overflow-x-auto">
-
-<table class="w-full text-sm text-slate-300">
-
-<thead class="bg-slate-700 text-xs uppercase text-slate-400">
-<tr>
-<th class="px-6 py-3 text-left">Nome</th>
-<th class="px-6 py-3 text-left">IP</th>
-<th class="px-6 py-3 text-left">Caixa</th>
-<th class="px-6 py-3 text-left">Status</th>
-<th class="px-6 py-3 text-left">Latência</th>
-</tr>
-</thead>
-
-<tbody>
-
-{% for cam in cameras %}
-
-<tr class="border-b border-slate-700 hover:bg-slate-700/40 transition">
-
-<td class="px-6 py-4 font-medium text-white">
-{{ cam.nome }}
-</td>
-
-<td class="px-6 py-4">
-{{ cam.ip }}
-</td>
-
-<td class="px-6 py-4">
-{{ cam.caixa }}
-</td>
-
-<td class="px-6 py-4">
-
-{% if cam.status == "Online" %}
-
-<span class="flex items-center gap-2 text-green-400">
-<span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-Online
-</span>
-
-{% elif cam.status == "Offline" %}
-
-<span class="flex items-center gap-2 text-red-400">
-<span class="w-2 h-2 bg-red-400 rounded-full"></span>
-Offline
-</span>
-
-{% elif cam.status == "Desconhecido" %}
-
-<span class="flex items-center gap-2 text-yellow-400">
-<span class="w-2 h-2 bg-yellow-400 rounded-full"></span>
-Sem comunicação
-</span>
-
-{% else %}
-
-<span class="text-slate-400">
-Sem teste
-</span>
-
-{% endif %}
-
-</td>
-
-<td class="px-6 py-4">
-{{ cam.latencia }}
-</td>
-
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
-
-</div>
-
-{% else %}
-
-<div class="p-6 text-slate-400 text-sm">
-Nenhuma câmera cadastrada.
-</div>
-
-{% endif %}
-
-</div>
-
+        {% if cameras %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-900/50 text-slate-500 text-[10px] uppercase font-bold tracking-widest">
+                        <th class="px-8 py-4">Equipamento</th>
+                        <th class="px-8 py-4">Endereço IP</th>
+                        <th class="px-8 py-4 text-center">Setor/Caixa</th>
+                        <th class="px-8 py-4">Estado</th>
+                        <th class="px-8 py-4 text-right">Latência</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700/50">
+                    {% for cam in cameras %}
+                    <tr class="hover:bg-blue-500/5 transition-colors group">
+                        <td class="px-8 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                                    <i class="fa-solid fa-camera text-xs text-slate-400 group-hover:text-white"></i>
+                                </div>
+                                <span class="font-bold text-white text-sm">{{ cam.nome }}</span>
+                            </div>
+                        </td>
+                        <td class="px-8 py-5 font-mono text-xs text-slate-400">{{ cam.ip }}</td>
+                        <td class="px-8 py-5 text-center">
+                            <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-md text-[11px] font-bold border border-slate-700">
+                                {{ cam.caixa }}
+                            </span>
+                        </td>
+                        <td class="px-8 py-5">
+                            {% if cam.status == "Online" %}
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-[11px] font-bold border border-green-500/20">
+                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></span>
+                                    ONLINE
+                                </div>
+                            {% elif cam.status == "Offline" %}
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-400 text-[11px] font-bold border border-red-500/20">
+                                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                    OFFLINE
+                                </div>
+                            {% else %}
+                                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-[11px] font-bold border border-yellow-500/20">
+                                    <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span>
+                                    LOST
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-8 py-5 text-right font-mono text-xs">
+                            <span class="{{ 'text-green-400' if cam.latencia|int < 50 else 'text-yellow-400' }}">
+                                {{ cam.latencia }}ms
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-20 flex flex-col items-center justify-center text-slate-500">
+            <i class="fa-solid fa-video-slash text-4xl mb-4 opacity-20"></i>
+            <p class="text-sm font-medium">Nenhum dispositivo encontrado no banco de dados.</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
 </body>

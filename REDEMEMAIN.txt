@@ -1,0 +1,625 @@
+
+def index():
+    """
+        Renderiza o painel principal do sistema com status das câmeras e do agente.
+
+        Esta função:
+        - Identifica a empresa do usuário logado
+        - Verifica o status do agente (online/offline)
+        - Lista todas as câmeras da empresa
+        - Consulta o último resultado de ping de cada câmera
+        - Define status e latência das câmeras
+        - Dispara novos comandos de ping automaticamente (se necessário)
+        - Ordena as câmeras por prioridade de status
+        - Renderiza o dashboard principal
+
+        Fluxo:
+        1. Obtém usuário logado via sessão
+        2. Busca empresa vinculada ao usuário
+        3. Verifica status do agente via último heartbeat:
+            - < 60s → ON
+            - ≥ 60s → OFF
+        4. Busca todas as câmeras da empresa
+        5. Para cada câmera:
+            a. Busca último comando executado (ping)
+            b. Interpreta resultado:
+                - "ttl=" → Online
+                - sem resposta → Offline
+            c. Extrai latência via regex
+            d. Evita flood de comandos (verifica pendentes)
+            e. Cria novo comando de ping se necessário
+        6. Monta lista estruturada de câmeras
+        7. Ordena por prioridade:
+            Offline → Desconhecido → Sem teste → Online
+        8. Renderiza template com dados
+
+        Returns:
+            Response: Página HTML (index.html) com:
+                - lista de câmeras
+                - status do agente
+
+        Sessão:
+            - session["usuario_id"]: identifica usuário logado
+
+        Banco de Dados:
+            - usuarios → vínculo com empresa
+            - agentes → status via heartbeat
+            - cameras → lista de dispositivos
+            - comandos → histórico e fila de execução
+
+        Status de Câmeras:
+            - Online: resposta válida com TTL
+            - Offline: sem resposta válida
+            - Sem teste: nenhum comando executado ainda
+            - Desconhecido: agente offline
+
+        Lógica de Monitoramento:
+            - Sistema utiliza comandos 'ping' para verificar disponibilidade
+            - Evita duplicidade com verificação de comandos pendentes
+            - Execução é delegada ao agente
+
+        Observações:
+            - Usa parsing de texto do ping para determinar status
+            - Latência extraída via regex
+            - Apenas o último comando executado é considerado
+            - Assume existência de pelo menos um agente
+
+        Possíveis melhorias:
+            - Suporte a múltiplos agentes por empresa
+            - Cache de status para reduzir queries
+            - Estruturar resultado do ping em JSON
+            - Implementar timeout configurável
+            - Melhorar performance (evitar múltiplas queries por câmera)
+        """
+        
+        ==========================================================
+        
+        def cadastrar():
+        
+        """
+    Realiza o cadastro de novas câmeras no sistema, vinculadas à empresa do usuário.
+
+    Esta função:
+    - Exibe o formulário de cadastro de câmeras (GET)
+    - Processa o envio dos dados (POST)
+    - Associa automaticamente a câmera à empresa do usuário logado
+    - Persiste os dados no banco
+    - Trata erros de duplicidade
+
+    Fluxo:
+    1. Verifica método da requisição (GET ou POST)
+    2. Se POST:
+        a. Obtém empresa do usuário logado via sessão
+        b. Valida existência do usuário
+        c. Captura dados do formulário
+        d. Insere nova câmera no banco
+        e. Trata erros:
+            - Duplicidade (nome/IP)
+            - Erros genéricos
+        f. Redireciona para o dashboard
+    3. Se GET:
+        - Renderiza página de cadastro
+
+    Campos (form-data):
+        nome_camera (str): Nome identificador da câmera
+        ip_camera (str): Endereço IP da câmera
+        caixa (str): Identificação/local físico (ex: caixa/poste)
+        rua1 (str): Endereço principal
+        rua2 (str): Endereço complementar
+        mac (str): Endereço MAC da câmera
+        usuario (str): Usuário de acesso à câmera
+        senha (str): Senha de acesso à câmera
+        stream_path (str): Caminho do stream (ex: RTSP)
+
+    Returns:
+        Response:
+            - Renderiza cadastro.html (GET)
+            - Redireciona para index após sucesso
+            - Retorna mensagem de erro em caso de falha
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+        - empresa_id obtido via consulta no banco
+
+    Banco de Dados:
+        - Tabela: cameras
+        - Relacionamento: empresa_id
+
+    Segurança:
+        - Acesso restrito a usuários autenticados (@login_required)
+        - Isolamento por empresa (multi-tenant)
+
+    Observações:
+        - Não valida campos obrigatórios individualmente
+        - Não valida formato de IP/MAC
+        - Armazena credenciais da câmera (usuario/senha)
+
+    Tratamento de erros:
+        - Duplicidade detectada via mensagem do banco ("duplicate key")
+        - Rollback em falhas de inserção
+
+    Possíveis melhorias:
+        - Validar formato de IP e MAC
+        - Criptografar senha da câmera (ou usar vault)
+        - Validar campos obrigatórios
+        - Melhorar mensagens com flash()
+        - Criar validação de conectividade (teste RTSP)
+    """
+    
+    ============================================================================================
+    
+    def teste():
+    
+    """
+    Realiza testes manuais de conectividade (ping) em câmeras e exibe resultados.
+
+    Esta função:
+    - Identifica a empresa do usuário logado
+    - Verifica o status do agente (online/offline)
+    - Lista caixas disponíveis para filtro
+    - Permite executar testes de ping manualmente:
+        • por IP
+        • por caixa
+        • geral (todas as câmeras)
+    - Registra comandos no banco para execução pelo agente
+    - Consulta e exibe resultados dos testes
+
+    Fluxo:
+    1. Obtém empresa do usuário via sessão
+    2. Verifica status do agente via último heartbeat:
+        - < 60s → ON
+        - ≥ 60s → OFF
+    3. Lista caixas distintas da empresa
+    4. Se GET:
+        - Exibe lista de câmeras sem testes (estado inicial)
+    5. Se POST:
+        a. Identifica tipo de teste (ip, caixa, geral)
+        b. Se agente OFF:
+            - Retorna resultado como "Sem comunicação"
+        c. Se agente ON:
+            - Obtém agente_id
+            - Monta lista de IPs a testar
+            - Insere comandos 'ping' no banco
+            - Busca últimos resultados executados
+            - Interpreta status e latência
+
+    Tipos de teste:
+        - ip: teste manual de um IP específico
+        - caixa: testa todas as câmeras de uma caixa
+        - geral: testa todas as câmeras da empresa
+
+    Returns:
+        Response: Página HTML (teste.html) contendo:
+            - lista de caixas
+            - resultados dos testes
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+
+    Banco de Dados:
+        - usuarios → empresa do usuário
+        - agentes → status via heartbeat
+        - cameras → origem dos IPs
+        - comandos → execução e resultados
+
+    Status retornados:
+        - Online: resposta com TTL
+        - Offline: sem resposta válida
+        - Aguardando: comando enviado, sem retorno ainda
+        - Sem comunicação: agente offline
+
+    Observações:
+        - Permite execução manual de testes sob demanda
+        - Não impede duplicidade de comandos (pode gerar múltiplos)
+        - Usa parsing de texto para determinar status
+        - Resultados são baseados no último comando executado
+
+    Segurança:
+        - Acesso restrito a usuários autenticados
+
+    Possíveis melhorias:
+        - Evitar duplicidade de comandos (controle de fila)
+        - Retornar resultados em tempo real (polling/WebSocket)
+        - Estruturar resultado como JSON
+        - Adicionar timeout visual para testes pendentes
+        - Paginar resultados para grande volume de câmeras
+    """
+    
+    =========================================================================
+    
+    def pesquisar():
+    
+    """
+    Realiza a busca de câmeras com base em um termo informado pelo usuário.
+
+    Esta função:
+    - Identifica a empresa do usuário logado
+    - Recebe um termo de pesquisa via formulário
+    - Busca câmeras relacionadas ao termo em múltiplos campos
+    - Retorna os resultados para exibição
+
+    Fluxo:
+    1. Obtém empresa do usuário via sessão
+    2. Se usuário não existir:
+        - Redireciona para logout
+    3. Se POST:
+        a. Captura termo de pesquisa
+        b. Executa consulta na tabela 'cameras'
+        c. Aplica filtro em múltiplos campos:
+            - nome_camera
+            - ip_camera
+            - caixa
+            - rua1
+            - rua2
+        d. Utiliza ILIKE para busca case-insensitive
+    4. Fecha conexão com banco
+    5. Renderiza página com resultados
+
+    Args (form-data):
+        termo (str): Texto utilizado na busca
+
+    Returns:
+        Response: Página HTML (pesquisa.html) contendo:
+            - lista de câmeras que correspondem ao termo
+            - lista vazia caso não haja resultados
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+        - empresa_id obtido via banco
+
+    Banco de Dados:
+        - Tabela: cameras
+        - Filtro por empresa_id (multi-tenant)
+        - Busca com operador ILIKE (case-insensitive)
+
+    Campos pesquisáveis:
+        - nome_camera
+        - ip_camera
+        - caixa
+        - rua1
+        - rua2
+
+    Observações:
+        - Busca parcial (usa %termo%)
+        - Não possui paginação (retorna todos os resultados)
+        - Não trata termos vazios explicitamente
+
+    Segurança:
+        - Isolamento por empresa (empresa_id)
+        - Protegido por autenticação (@login_required)
+
+    Possíveis melhorias:
+        - Adicionar paginação para grandes volumes
+        - Implementar debounce (frontend)
+        - Criar índice no banco para melhorar performance (ILIKE)
+        - Destacar termos encontrados (highlight)
+        - Permitir busca combinada (filtros avançados)
+    """
+
+=================================================================================
+
+def alteraçoes():
+
+ """
+    Exibe a lista de câmeras da empresa para visualização e possíveis alterações.
+
+    Esta função:
+    - Identifica a empresa do usuário logado
+    - Busca todas as câmeras vinculadas à empresa
+    - Retorna os dados para exibição em tela de configuração/edição
+
+    Fluxo:
+    1. Obtém usuário logado via sessão
+    2. Busca empresa associada ao usuário
+    3. Valida existência do usuário
+    4. Consulta todas as câmeras da empresa
+    5. Ordena por ID decrescente (mais recentes primeiro)
+    6. Fecha conexão com banco
+    7. Renderiza template com os dados
+
+    Returns:
+        Response: Página HTML (alteracoes.html) contendo:
+            - lista de câmeras
+            - dados completos para edição
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+
+    Banco de Dados:
+        - usuarios → vínculo com empresa
+        - cameras → dados das câmeras
+
+    Campos retornados:
+        - id
+        - nome_camera
+        - ip_camera
+        - caixa
+        - rua1
+        - rua2
+        - mac
+        - usuario (credencial da câmera)
+        - senha (credencial da câmera)
+
+    Segurança:
+        - Acesso restrito a usuários autenticados (@login_required)
+        - Isolamento por empresa (multi-tenant)
+
+    Observações:
+        - Retorna credenciais das câmeras (sensível)
+        - Não possui paginação (pode crescer com volume)
+        - Função apenas de leitura (edição ocorre em outra rota)
+
+    Possíveis melhorias:
+        - Ocultar ou mascarar senha da câmera
+        - Implementar paginação
+        - Adicionar filtros (caixa, status, etc.)
+        - Criar endpoint específico para edição
+    """
+    
+    =================================================================================
+    
+    
+    def editar():
+    
+     """
+    Permite editar os dados de uma câmera específica pertencente à empresa do usuário.
+
+    Esta função:
+    - Identifica a empresa do usuário logado
+    - Valida se a câmera pertence à empresa (isolamento multi-tenant)
+    - Exibe os dados atuais da câmera (GET)
+    - Atualiza os dados da câmera no banco (POST)
+
+    Fluxo:
+    1. Obtém empresa do usuário via sessão
+    2. Valida existência do usuário
+    3. Se POST:
+        a. Captura dados do formulário
+        b. Executa UPDATE na tabela 'cameras'
+        c. Garante que a câmera pertence à empresa
+        d. Confirma transação (commit)
+        e. Redireciona para tela de alterações
+    4. Se GET:
+        a. Busca dados da câmera pelo ID
+        b. Valida vínculo com empresa
+        c. Renderiza formulário preenchido
+
+    Args:
+        id (int): ID da câmera a ser editada
+
+    Campos editáveis (form-data):
+        nome_camera (str)
+        ip_camera (str)
+        caixa (str)
+        rua1 (str)
+        rua2 (str)
+        mac (str)
+        usuario (str): credencial da câmera
+        senha (str): credencial da câmera
+
+    Returns:
+        Response:
+            - Renderiza editar.html com dados da câmera (GET)
+            - Redireciona para alteracoes após sucesso (POST)
+            - Retorna erro em caso de falha
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+
+    Banco de Dados:
+        - Tabela: cameras
+        - Condição de segurança:
+            WHERE id = %s AND empresa_id = %s
+
+    Segurança:
+        - Acesso restrito a usuários autenticados (@login_required)
+        - Isolamento por empresa (evita acesso a dados de outras empresas)
+
+    Observações:
+        - Atualiza diretamente todos os campos (overwrite completo)
+        - Não valida campos individualmente
+        - Permite alteração de credenciais da câmera
+
+    Tratamento de erros:
+        - Rollback em caso de falha no UPDATE
+        - Retorna mensagem com erro
+
+    Possíveis melhorias:
+        - Validar formato de IP/MAC
+        - Criptografar senha da câmera
+        - Detectar alterações (evitar update desnecessário)
+        - Adicionar confirmação de edição
+        - Implementar histórico de alterações (audit log)
+    """
+    
+    ==============================================================================
+    
+    def apagar():
+    
+     """
+    Remove uma câmera do sistema, garantindo que pertença à empresa do usuário.
+
+    Esta função:
+    - Identifica a empresa do usuário logado
+    - Executa a exclusão da câmera pelo ID
+    - Garante isolamento multi-tenant (empresa_id)
+    - Redireciona para a tela de alterações após a remoção
+
+    Fluxo:
+    1. Obtém empresa do usuário via sessão
+    2. Valida existência do usuário
+    3. Executa DELETE na tabela 'cameras'
+       com verificação de empresa_id
+    4. Confirma a transação (commit)
+    5. Fecha conexão com banco
+    6. Redireciona para a página de alterações
+
+    Args:
+        id (int): ID da câmera a ser removida
+
+    Returns:
+        Response: Redireciona para a página 'alteracoes'
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+
+    Banco de Dados:
+        - Tabela: cameras
+        - Condição de segurança:
+            WHERE id = %s AND empresa_id = %s
+
+    Segurança:
+        - Acesso restrito a usuários autenticados (@login_required)
+        - Proteção multi-tenant (impede exclusão de outras empresas)
+        - Método POST evita exclusão acidental via URL
+
+    Observações:
+        - Exclusão permanente (hard delete)
+        - Não há confirmação adicional no backend
+        - Não verifica existência antes de excluir
+
+    Possíveis melhorias:
+        - Implementar soft delete (campo ativo/deletado)
+        - Adicionar confirmação no frontend
+        - Criar log de auditoria (quem apagou, quando)
+        - Verificar dependências antes da exclusão
+    """
+
+=================================================================================
+
+def relatorio():
+
+  """
+    Gera um relatório de câmeras offline da empresa do usuário.
+
+    Esta função:
+    - Identifica a empresa do usuário logado
+    - Busca todas as câmeras da empresa
+    - Verifica o último resultado de ping de cada câmera
+    - Filtra apenas as câmeras que estão offline
+    - Retorna os dados para exibição em relatório
+
+    Fluxo:
+    1. Obtém empresa do usuário via sessão
+    2. Valida existência do usuário
+    3. Busca todas as câmeras da empresa
+    4. Para cada câmera:
+        a. Consulta último comando executado (ping)
+        b. Analisa resultado:
+            - Contém "ttl=" → Online
+            - Caso contrário → Offline
+        c. Se Offline:
+            - Adiciona à lista do relatório
+    5. Fecha conexão com banco
+    6. Renderiza template com câmeras offline
+
+    Returns:
+        Response: Página HTML (relatorio.html) contendo:
+            - lista de câmeras offline
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+
+    Banco de Dados:
+        - usuarios → empresa do usuário
+        - cameras → lista de dispositivos
+        - comandos → histórico de execução (ping)
+
+    Critério de Status:
+        - Online: resultado contém "ttl="
+        - Offline: ausência de resultado válido
+
+    Observações:
+        - Considera apenas o último comando executado
+        - Não diferencia erro de rede vs timeout
+        - Não inclui câmeras sem histórico (assumidas como offline)
+
+    Segurança:
+        - Acesso restrito a usuários autenticados (@login_required)
+        - Isolamento por empresa (multi-tenant)
+
+    Possíveis melhorias:
+        - Incluir data/hora do último teste
+        - Mostrar latência
+        - Diferenciar tipos de falha (timeout, host down, etc.)
+        - Exportar relatório (CSV/PDF)
+        - Adicionar filtros (caixa, região, etc.)
+    """
+    
+    ===================================================================================================
+    
+  
+def relatorio_pdf():
+    """
+    Gera um relatório em PDF contendo as câmeras offline da empresa do usuário.
+
+    Esta função:
+    - Identifica a empresa do usuário logado
+    - Busca todas as câmeras da empresa
+    - Analisa o último resultado de ping de cada câmera
+    - Filtra apenas câmeras offline
+    - Gera um arquivo PDF com os dados formatados
+    - Retorna o PDF para download
+
+    Fluxo:
+    1. Obtém empresa do usuário via sessão
+    2. Valida existência do usuário
+    3. Busca todas as câmeras da empresa
+    4. Para cada câmera:
+        a. Consulta último comando executado (ping)
+        b. Determina status (Online/Offline)
+        c. Adiciona à lista se estiver offline
+    5. Gera PDF:
+        - Título
+        - Data/hora de geração
+        - Total de câmeras offline
+        - Tabela com dados
+    6. Trata quebra de página automaticamente
+    7. Retorna arquivo PDF como download
+
+    Returns:
+        Response:
+            - Arquivo PDF para download (application/pdf)
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+
+    Banco de Dados:
+        - usuarios → empresa do usuário
+        - cameras → dispositivos
+        - comandos → histórico de execução
+
+    Conteúdo do PDF:
+        - Título do relatório
+        - Data de geração
+        - Quantidade total de câmeras offline
+        - Lista contendo:
+            • Nome
+            • IP
+            • Caixa
+            • Status
+
+    Biblioteca:
+        - reportlab (canvas) para geração do PDF
+        - io.BytesIO para buffer em memória
+
+    Observações:
+        - Considera apenas o último comando executado
+        - Todas as câmeras sem resposta válida são consideradas offline
+        - PDF gerado em memória (não salva em disco)
+
+    Layout:
+        - Paginação automática quando atinge limite vertical
+        - Cabeçalho repetido em novas páginas
+
+    Segurança:
+        - Acesso restrito a usuários autenticados (@login_required)
+        - Isolamento por empresa (multi-tenant)
+
+    Possíveis melhorias:
+        - Adicionar logo da empresa no PDF
+        - Incluir latência e horário do último teste
+        - Permitir exportação por filtro (caixa/região)
+        - Gerar PDF com tabela estilizada (cores/bordas)
+        - Cachear relatório para reduzir carga
+    """

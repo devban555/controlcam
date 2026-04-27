@@ -1,112 +1,176 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Cadastro de Câmera</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Control Cam | Novo Dispositivo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
 
-<script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+        /* Reset de Autocomplete e Inputs */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-text-fill-color: white !important;
+            -webkit-box-shadow: 0 0 0px 1000px #1e293b inset !important; /* Cor do bg do input */
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Estilização refinada dos inputs */
+        .input-base {
+            width: 100%;
+            background-color: #1e293b; /* slate-800 */
+            border: 1px solid #334155; /* slate-700 */
+            border-radius: 0.75rem;
+            padding: 0.8rem 1rem;
+            color: white;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-base:focus {
+            border-color: #3b82f6;
+            ring: 2px;
+            ring-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .label-style {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8; /* slate-400 */
+            margin-bottom: 0.5rem;
+            margin-left: 0.25rem;
+        }
+    </style>
 </head>
 
-<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen flex items-center justify-center">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-<div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-10 w-full max-w-3xl">
+    <div class="glass-card w-full max-w-4xl rounded-[2rem] shadow-2xl overflow-hidden">
 
-<div class="flex justify-between items-center mb-8">
-<h1 class="text-2xl font-bold text-white">Cadastro de Câmera</h1>
+        <div class="px-8 py-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/40 text-white">
+                    <i class="fa-solid fa-video text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-tight">Novo Dispositivo</h1>
+                    <p class="text-xs text-slate-400 font-medium">Cadastre os parâmetros técnicos da câmera</p>
+                </div>
+            </div>
 
-<a href="{{ url_for('index') }}"
-class="text-sm bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
-Voltar
-</a>
-</div>
+            <a href="{{ url_for('main.index') }}" class="flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-white transition-all">
+                <i class="fa-solid fa-arrow-left text-xs"></i> Voltar
+            </a>
+        </div>
 
-<form method="POST" class="space-y-6">
+        <form method="POST" action="{{ url_for('main.cadastro') }}" class="p-8 md:p-10 space-y-10">
 
-<div>
-<label class="text-gray-300 text-sm">Nome da Câmera</label>
-<input type="text" name="nome_camera" required
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-</div>
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-1 w-8 bg-blue-500 rounded-full"></div>
+                    <h2 class="text-xs font-black text-blue-400 uppercase tracking-[0.2em]">Conexão e Rede</h2>
+                </div>
 
-<div>
-<label class="text-gray-300 text-sm">IP da Câmera</label>
-<input type="text" name="ip_camera" required
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="label-style">Nome Identificador</label>
+                        <input type="text" name="nome_camera" required placeholder="Ex: Câmera Portaria 01" class="input-base">
+                    </div>
+                    <div>
+                        <label class="label-style">Endereço IP</label>
+                        <input type="text" name="ip_camera" required placeholder="192.168.1.100" class="input-base font-mono">
+                    </div>
+                </div>
 
-<!-- STREAM PATH -->
-<div>
-<label class="text-gray-300 text-sm">Stream Path</label>
+                <div class="mt-6">
+                    <label class="label-style">Caminho do Stream (RTSP Path)</label>
+                    <div class="relative">
+                        <input type="text" name="stream_path" value="/cam/realmonitor?channel=1&subtype=1" class="input-base font-mono pr-12">
+                        <i class="fa-solid fa-link absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                    </div>
+                </div>
+            </section>
 
-<input type="text"
-name="stream_path"
-value="/cam/realmonitor?channel=1&subtype=1"
-placeholder="/cam/realmonitor?channel=1&subtype=1"
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
+            <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 rounded-2xl bg-slate-900/40 border border-white/5">
+                <div class="lg:col-span-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="h-1 w-6 bg-indigo-500 rounded-full"></div>
+                        <h2 class="text-xs font-black text-indigo-400 uppercase tracking-[0.2em]">Credenciais</h2>
+                    </div>
+                    <p class="text-[11px] text-slate-500 leading-relaxed">Dados para autenticação RTSP via Agente.</p>
+                </div>
 
-<p class="text-xs text-slate-400 mt-1">
-Padrão Intelbras/Dahua. Altere apenas se a câmera usar outro formato RTSP.
-</p>
-</div>
+                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="label-style">Usuário</label>
+                        <input type="text" name="usuario" placeholder="admin" class="input-base">
+                    </div>
+                    <div>
+                        <label class="label-text label-style">Senha</label>
+                        <input type="password" name="senha" placeholder="••••••••" class="input-base">
+                    </div>
+                </div>
+            </section>
 
-<!-- LOGIN DA CAMERA -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-1 w-8 bg-slate-500 rounded-full"></div>
+                    <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Localização e Hardware</h2>
+                </div>
 
-<div>
-<label class="text-gray-300 text-sm">Usuário da Câmera</label>
-<input type="text" name="usuario"
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="label-style">Nº do Caixa / Setor</label>
+                        <input type="text" name="caixa" placeholder="01" class="input-base">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="label-style">MAC Address</label>
+                        <input type="text" name="mac" placeholder="00:00:00:00:00:00" class="input-base font-mono">
+                    </div>
+                </div>
 
-<div>
-<label class="text-gray-300 text-sm">Senha da Câmera</label>
-<input type="text" name="senha"
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <label class="label-style">Ponto de Referência (Rua 1)</label>
+                        <input type="text" name="rua1" placeholder="Rua das Palmeiras" class="input-base">
+                    </div>
+                    <div>
+                        <label class="label-style">Cruzamento (Rua 2)</label>
+                        <input type="text" name="rua2" placeholder="Av. Central" class="input-base">
+                    </div>
+                </div>
+            </section>
 
-</div>
-
-<div>
-<label class="text-gray-300 text-sm">Caixa</label>
-<input type="text" name="caixa"
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-</div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-<div>
-<label class="text-gray-300 text-sm">Rua 1</label>
-<input type="text" name="rua1"
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-</div>
-
-<div>
-<label class="text-gray-300 text-sm">Rua 2</label>
-<input type="text" name="rua2"
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-</div>
-
-</div>
-
-<div>
-<label class="text-gray-300 text-sm">MAC Address</label>
-<input type="text" name="mac"
-class="w-full mt-2 p-3 rounded-lg bg-slate-800 border border-slate-600 text-white focus:outline-none focus:border-blue-500">
-</div>
-
-<div class="pt-4">
-<button type="submit"
-class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition">
-Salvar Cadastro
-</button>
-</div>
-
-</form>
-
-</div>
+            <div class="pt-6 flex flex-col md:flex-row items-center justify-between gap-6 border-t border-white/5">
+                <div class="flex items-center gap-2 text-slate-500">
+                    <i class="fa-solid fa-shield-check text-blue-500/50"></i>
+                    <span class="text-[10px] uppercase font-bold tracking-widest">Configuração Segura</span>
+                </div>
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <button type="reset" class="flex-1 md:flex-none px-6 py-3 text-sm font-bold text-slate-400 hover:text-white transition-colors">
+                        Limpar
+                    </button>
+                    <button type="submit" class="flex-1 md:flex-none px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-blue-900/30 transition-all active:scale-95">
+                        Salvar Dispositivo
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 
 </body>
 </html>

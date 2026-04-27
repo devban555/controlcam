@@ -1,32 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Registro - Control Cam</title>
+    <meta charset="UTF-8">
+    <title>Control Cam | Registro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d111a;
+        }
+
+        .login-card {
+            background-color: #1a2233;
+            border-radius: 40px;
+        }
+
+        .input-field {
+            background-color: #ffffff;
+            color: #333;
+            border-radius: 8px;
+            padding: 12px 12px 12px 45px;
+            width: 100%;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        .btn-primary {
+            background-color: #2563eb;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+    </style>
 </head>
-<body class="bg-slate-900 flex items-center justify-center min-h-screen">
 
-<div class="bg-slate-800 p-8 rounded-xl shadow-lg w-96 border border-slate-700">
+<body class="flex items-center justify-center min-h-screen p-6">
 
-    <h1 class="text-2xl text-white font-bold mb-6 text-center">Criar Conta</h1>
+    <div class="w-full max-w-[480px] animate-in fade-in duration-700">
 
-    <form method="POST" class="space-y-4">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-[#2563eb] rounded-2xl mb-4 shadow-lg">
+                <i class="fa-solid fa-user-plus text-white text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-white italic uppercase tracking-tight">
+                Novo <span class="text-[#4285f4]">Cadastro</span>
+            </h2>
+        </div>
 
-        <input type="text" name="username" placeholder="Usuário"
-               class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600 text-white">
+        <div class="login-card p-8 md:p-10 shadow-2xl">
 
-        <input type="password" name="senha" placeholder="Senha"
-               class="w-full p-3 rounded-lg bg-slate-900 border border-slate-600 text-white">
+            <form method="POST" action="#" class="space-y-5">
 
-        <button type="submit"
-                class="w-full bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg">
-            Registrar
-        </button>
+                <div class="relative group">
+                    <i class="fa-solid fa-address-card input-icon"></i>
+                    <input type="text" name="username" placeholder="Nome de usuário" required
+                           class="input-field">
+                </div>
 
-    </form>
+                <div class="relative group">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input type="email" name="email" placeholder="E-mail corporativo" required
+                           class="input-field">
+                </div>
 
-</div>
+                <div class="relative group">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" name="senha" placeholder="Criar palavra-passe" required
+                           class="input-field">
+                </div>
+
+                <button type="submit" class="btn-primary w-full text-white font-bold py-4 rounded-xl text-lg shadow-lg flex items-center justify-center gap-3 uppercase mt-4">
+                    Criar Conta <i class="fa-solid fa-check-double text-sm opacity-70"></i>
+                </button>
+
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-slate-700/50 text-center">
+                <a href="{{ url_for('auth.login') }}" class="text-slate-400 hover:text-blue-400 transition-colors text-sm font-medium flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-arrow-left text-xs"></i> Voltar para o login
+                </a>
+            </div>
+        </div>
+
+        <p class="text-center text-slate-700 text-[11px] mt-8 font-medium">
+            &copy; 2026 Control Cam Security Systems. <br>
+            A criação de contas pode estar sujeita a aprovação do administrador.
+        </p>
+
+    </div>
 
 </body>
 </html>
-

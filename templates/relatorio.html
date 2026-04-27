@@ -1,98 +1,129 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <meta charset="UTF-8">
+    <title>Control Cam | Relatório de Incidências</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-<meta charset="UTF-8">
-<title>Relatório Offline</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #e2e8f0; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-<script src="https://cdn.tailwindcss.com"></script>
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+        }
 
+        .report-header {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(30, 41, 59, 0) 100%);
+        }
+    </style>
 </head>
 
-<body class="bg-slate-900 min-h-screen">
+<body class="min-h-screen p-6 md:p-12">
 
-<div class="max-w-6xl mx-auto px-6 py-10">
+    <div class="max-w-6xl mx-auto">
 
-<h1 class="text-2xl text-white font-bold mb-8">
-Relatório de Câmeras Offline
-</h1>
+        <header class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+            <div>
+                <h1 class="text-3xl font-extrabold text-white flex items-center gap-3">
+                    <span class="bg-red-600/20 text-red-500 p-2 rounded-xl text-xl">
+                        <i class="fa-solid fa-file-circle-exclamation"></i>
+                    </span>
+                    Relatório de Status
+                </h1>
+                <p class="text-slate-500 mt-2 font-medium italic">Filtro ativo: Dispositivos sem conectividade detectada</p>
+            </div>
 
-<div class="bg-slate-800 rounded-xl border border-slate-700">
+            <div class="flex gap-3">
+                <a href="{{ url_for('main.index') }}" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-xl border border-slate-700 transition-all font-bold text-sm">
+                    <i class="fa-solid fa-house"></i> Painel
+                </a>
 
-{% if cameras %}
+                <a href="{{ url_for('main.relatorio_pdf') }}" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-blue-900/20 transition-all font-bold text-sm active:scale-95">
+                    <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+                </a>
+            </div>
+        </header>
 
-<div class="overflow-x-auto">
+        <div class="glass-card overflow-hidden shadow-2xl border-red-500/10">
 
-<table class="w-full text-sm text-slate-300">
+            <div class="px-8 py-6 border-b border-white/5 flex justify-between items-center report-header">
+                <div>
+                    <h2 class="text-[10px] font-black text-red-400 uppercase tracking-[0.2em] mb-1">Diagnóstico Crítico</h2>
+                    <p class="text-sm font-bold text-white uppercase tracking-widest">Câmeras Fora de Operação</p>
+                </div>
 
-<thead class="bg-slate-700 text-xs uppercase text-slate-400">
+                <div class="text-right">
+                    <span class="text-2xl font-black {{ 'text-red-500' if cameras else 'text-green-500' }}">
+                        {{ cameras|length if cameras else 0 }}
+                    </span>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase">Ocorrências</p>
+                </div>
+            </div>
 
-<tr>
-<th class="px-6 py-3 text-left">Nome</th>
-<th class="px-6 py-3 text-left">IP</th>
-<th class="px-6 py-3 text-left">Caixa</th>
-<th class="px-6 py-3 text-left">Status</th>
-</tr>
+            {% if cameras %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-white/5 bg-slate-900/40">
+                            <th class="px-8 py-4">Equipamento</th>
+                            <th class="px-8 py-4">Endereço de Rede (IP)</th>
+                            <th class="px-8 py-4 text-center">Nº Caixa</th>
+                            <th class="px-8 py-4 text-right">Status Atual</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for cam in cameras %}
+                        <tr class="hover:bg-red-500/[0.02] transition-colors group">
+                            <td class="px-8 py-5">
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-solid fa-video-slash text-slate-600 group-hover:text-red-500 transition-colors"></i>
+                                    <span class="font-bold text-white text-sm">{{ cam.nome }}</span>
+                                </div>
+                            </td>
+                            <td class="px-8 py-5 font-mono text-xs text-slate-400">{{ cam.ip }}</td>
+                            <td class="px-8 py-5 text-center">
+                                <span class="bg-slate-800 text-slate-400 px-3 py-1 rounded text-[10px] font-bold border border-slate-700">
+                                    {{ cam.caixa }}
+                                </span>
+                            </td>
+                            <td class="px-8 py-5 text-right">
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-black border border-red-500/20">
+                                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                    OFFLINE
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-</thead>
+            <div class="p-6 bg-slate-900/30 border-t border-white/5 text-center">
+                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-[0.1em]">
+                    <i class="fa-solid fa-clock-rotate-left mr-2"></i> Relatório gerado automaticamente pelo sistema Control Cam
+                </p>
+            </div>
 
-<tbody>
-
-{% for cam in cameras %}
-
-<tr class="border-b border-slate-700 hover:bg-slate-700/40 transition">
-
-<td class="px-6 py-4 text-white font-medium">
-{{ cam.nome }}
-</td>
-
-<td class="px-6 py-4">
-{{ cam.ip }}
-</td>
-
-<td class="px-6 py-4">
-{{ cam.caixa }}
-</td>
-
-<td class="px-6 py-4 text-red-400 font-semibold">
-Offline
-</td>
-
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
-
-</div>
-
-{% else %}
-
-<div class="p-6 text-green-400">
-Nenhuma câmera offline.
-</div>
-
-{% endif %}
-
-</div>
-
-<div class="mt-6 flex gap-3">
-
-<a href="{{ url_for('index') }}"
-class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg">
-Voltar
-</a>
-
-<a href="{{ url_for('relatorio_pdf') }}"
-class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg">
-Exportar PDF
-</a>
-
-</div>
-
-</div>
+            {% else %}
+            <div class="py-24 flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-6 border border-green-500/20">
+                    <i class="fa-solid fa-check-double text-3xl text-green-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Tudo em conformidade!</h3>
+                <p class="text-slate-500 text-sm max-w-xs leading-relaxed">
+                    Nenhum dispositivo offline detectado no momento. Todos os ativos estão comunicando normalmente.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
 </body>
 </html>

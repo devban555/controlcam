@@ -1,164 +1,154 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Control Cam • Stream</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Control Cam | Live Stream</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-<script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #e2e8f0; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+        }
+
+        .status-badge {
+            @apply flex flex-col items-center justify-center min-w-[80px] p-2 rounded-xl border border-white/5 bg-slate-900/50;
+        }
+
+        .cam-monitor {
+            @apply relative bg-black rounded-xl overflow-hidden border border-slate-800 shadow-2xl transition-all duration-300 hover:border-blue-500/50 hover:shadow-blue-900/20;
+        }
+
+        /* Reset para o Select customizado */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+    </style>
 </head>
 
-<body class="bg-slate-900 min-h-screen text-white">
+<body class="min-h-screen p-4 md:p-8">
 
-<div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="max-w-[1600px] mx-auto">
 
-<!-- HEADER STATUS -->
+        <header class="flex flex-col xl:flex-row xl:items-center justify-between mb-10 gap-6 bg-slate-900/40 p-6 rounded-[2rem] border border-white/5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-900/40">
+                    <i class="fa-solid fa-satellite-dish text-white text-xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black text-white tracking-tight">Monitoramento em Tempo Real</h1>
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">Painel de Operações v3.0</p>
+                </div>
+            </div>
 
-<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="status-badge">
+                    <span class="text-[9px] font-black text-slate-500 uppercase">Online</span>
+                    <span class="text-green-400 font-mono text-lg font-bold">{{ online }}</span>
+                </div>
+                <div class="status-badge">
+                    <span class="text-[9px] font-black text-slate-400 uppercase">Offline</span>
+                    <span class="text-red-500 font-mono text-lg font-bold">{{ offline }}</span>
+                </div>
+                <div class="status-badge border-blue-500/20">
+                    <span class="text-[9px] font-black text-blue-500 uppercase">Agente</span>
+                    <span class="{{ 'text-green-400' if agente else 'text-red-500' }} text-xs font-black mt-1">
+                        {{ 'CONECTADO' if agente else 'DESCONECTADO' }}
+                    </span>
+                </div>
 
-<h1 class="text-3xl font-bold">
-Stream de Câmeras
-</h1>
+                <div class="h-10 w-px bg-white/5 mx-2 hidden md:block"></div>
 
-<div class="flex flex-wrap items-center gap-4">
+                <a href="{{ url_for('main.index') }}" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-5 py-3 rounded-xl border border-slate-700 transition-all font-bold text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> Sair
+                </a>
+            </div>
+        </header>
 
-<div class="bg-slate-800 px-4 py-2 rounded-lg text-center">
-<div class="text-xs text-slate-400">Online</div>
-<div class="text-green-400 text-lg font-bold">
-{{ online }}
-</div>
-</div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 px-2">
+            <form method="GET" class="flex items-center gap-3 w-full md:w-auto">
+                <div class="relative flex-1 md:w-64">
+                    <select name="caixa" class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-blue-500/50 outline-none text-sm font-medium transition-all">
+                        <option value="">Todas as Unidades</option>
+                        {% for c in caixas %}
+                            <option value="{{ c }}" {% if caixa_selecionada == c %}selected{% endif %}>Setor: {{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95">
+                    Filtrar
+                </button>
+            </form>
 
-<div class="bg-slate-800 px-4 py-2 rounded-lg text-center">
-<div class="text-xs text-slate-400">Offline</div>
-<div class="text-red-400 text-lg font-bold">
-{{ offline }}
-</div>
-</div>
+            <div class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                <i class="fa-solid fa-circle text-red-500 animate-ping text-[6px]"></i> Live Stream Ativo
+            </div>
+        </div>
 
-<div class="bg-slate-800 px-4 py-2 rounded-lg text-center">
-<div class="text-xs text-slate-400">Total</div>
-<div class="text-white text-lg font-bold">
-{{ total }}
-</div>
-</div>
+        {% if request.args.get('cam') %}
+        <div class="mb-12 animate-in fade-in zoom-in duration-300">
+            <div class="cam-monitor border-blue-500 shadow-blue-900/40">
+                <div class="px-6 py-4 bg-slate-900/90 flex justify-between items-center border-b border-white/5">
+                    <div class="flex items-center gap-3">
+                        <span class="flex h-2 w-2 rounded-full bg-red-500"></span>
+                        <span class="text-sm font-black text-white uppercase tracking-widest">Foco: {{ request.args.get('cam') }}</span>
+                    </div>
+                    <a href="{{ url_for('stream.stream') }}" class="bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white px-4 py-1.5 rounded-lg text-[10px] font-black transition-all">
+                        FECHAR VISÃO AMPLIADA
+                    </a>
+                </div>
+                <div class="aspect-video bg-black flex items-center justify-center">
+                    <img src="{{ url_for('stream.video', camera_id=request.args.get('cam')) }}" class="max-h-full mx-auto shadow-inner">
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
-<div class="bg-slate-800 px-4 py-2 rounded-lg text-center">
-<div class="text-xs text-slate-400">Agente</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+            {% for cam in cameras %}
+            <div class="cam-monitor group">
+                <div class="absolute top-0 left-0 w-full p-3 bg-gradient-to-b from-black/80 to-transparent z-10 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black text-white uppercase tracking-tighter">{{ cam.nome }}</span>
+                        <span class="text-[9px] text-blue-400 font-bold font-mono">SETOR: {{ cam.caixa }}</span>
+                    </div>
+                    <a href="?cam={{ cam.nome }}" class="bg-blue-600 p-2 rounded-lg text-white shadow-lg hover:bg-blue-500 transition-colors">
+                        <i class="fa-solid fa-expand text-xs"></i>
+                    </a>
+                </div>
 
-{% if agente %}
-<div class="text-green-400 font-bold">ON</div>
-{% else %}
-<div class="text-red-400 font-bold">OFF</div>
-{% endif %}
+                <div class="absolute bottom-3 left-3 text-[9px] font-mono text-white/40 group-hover:text-white/80 transition-colors z-10 pointer-events-none">
+                    REC <span class="animate-pulse">●</span> 2026-04-26
+                </div>
 
-</div>
+                <div class="aspect-video">
+                    <img src="{{ url_for('stream.video', camera_id=cam.nome) }}"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                         loading="lazy">
+                </div>
 
-<a href="{{ url_for('index') }}"
-class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg">
-Voltar
-</a>
+                <div class="bg-slate-900/80 px-4 py-2 border-t border-white/5 flex justify-between items-center">
+                   <span class="text-[10px] font-bold text-slate-400">{{ cam.nome }}</span>
+                   <i class="fa-solid fa-signal text-[8px] text-green-500"></i>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
 
-</div>
-
-</div>
-
-<!-- FILTRO -->
-
-<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
-
-<div class="flex items-center gap-4">
-
-<form method="GET">
-
-<select name="caixa"
-class="bg-slate-800 border border-slate-600 text-white px-4 py-2 rounded-lg focus:outline-none">
-
-<option value="">Todas as caixas</option>
-
-{% for c in caixas %}
-<option value="{{ c }}"
-{% if caixa_selecionada == c %}selected{% endif %}>
-{{ c }}
-</option>
-{% endfor %}
-
-</select>
-
-<button type="submit"
-class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg">
-Filtrar
-</button>
-
-</form>
-
-</div>
-
-</div>
-
-<!-- CAMERA EM DESTAQUE -->
-
-{% if request.args.get('cam') %}
-
-<div class="flex justify-center mb-12">
-
-<div class="bg-black border border-slate-700 rounded-lg overflow-hidden w-[900px] shadow-xl">
-
-<div class="px-4 py-2 bg-slate-800 flex justify-between items-center">
-
-<span class="text-sm">
-Câmera em destaque
-</span>
-
-<a href="/stream"
-class="text-red-400 hover:text-red-300 text-sm">
-Fechar
-</a>
-
-</div>
-
-<img src="/video/{{ request.args.get('cam') }}" class="w-full">
-
-</div>
-
-</div>
-
-{% endif %}
-
-<!-- GRID STREAM -->
-
-<div class="flex justify-center">
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-{% for cam in cameras %}
-
-<div class="bg-black rounded-lg overflow-hidden border border-slate-700 shadow-lg hover:scale-105 transition">
-
-<div class="px-3 py-2 text-xs bg-slate-800 text-slate-300 flex justify-between items-center">
-
-<span>
-{{ cam.nome }} • {{ cam.caixa }}
-</span>
-
-<a href="?cam={{ cam.nome }}"
-class="text-blue-400 hover:text-blue-300 text-xs">
-Expandir
-</a>
-
-</div>
-
-<img src="/video/{{ cam.nome }}" class="w-full">
-
-</div>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </body>
 </html>

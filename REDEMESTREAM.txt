@@ -1,0 +1,157 @@
+# ==============================
+# 📡 STREAM DASHBOARD
+# ==============================
+def stream():
+    """
+    Renderiza o dashboard de streaming de câmeras e envia comandos de captura ao agente.
+
+    Esta função:
+    - Identifica a empresa do usuário logado
+    - Lista caixas disponíveis para filtro
+    - Busca câmeras da empresa (com ou sem filtro por caixa)
+    - Gera URLs RTSP para cada câmera
+    - Envia comandos ao agente para captura de frames
+    - Monta estrutura para exibição no frontend
+
+    Fluxo:
+    1. Obtém parâmetro opcional 'caixa' (filtro)
+    2. Identifica empresa do usuário via sessão
+    3. Busca caixas disponíveis (DISTINCT)
+    4. Busca câmeras:
+        - Filtradas por caixa (se informado)
+        - Ou todas da empresa
+    5. Busca agente ativo da empresa
+    6. Para cada câmera:
+        a. Normaliza dados (usuario, senha, stream_path)
+        b. Gera identificador seguro (safe_nome)
+        c. Monta URL RTSP
+        d. Envia comando 'frame' para o agente
+        e. Adiciona à lista de exibição
+    7. Confirma transação (commit)
+    8. Renderiza dashboard de stream
+
+    Query Params:
+        caixa (str, opcional): Filtra câmeras por agrupamento
+
+    Returns:
+        Response: Página HTML (stream.html) contendo:
+            - lista de câmeras
+            - filtros por caixa
+            - status do agente
+
+    Sessão:
+        - session["usuario_id"]: identifica usuário logado
+
+    Banco de Dados:
+        - usuarios → empresa do usuário
+        - cameras → dados das câmeras
+        - agentes → agente ativo
+        - comandos → envio de comandos de frame
+
+    Comando enviado:
+        tipo: 'frame'
+        alvo: identificador da câmera (safe_nome)
+        resultado: URL RTSP da câmera
+
+    Estrutura de saída:
+        cameras = [
+            {
+                "nome": str,
+                "url": "/stream/video/<nome>",
+                "caixa": str
+            }
+        ]
+
+    Observações:
+        - Cada acesso ao dashboard gera novos comandos para o agente
+        - Não há controle de duplicidade de comandos
+        - Credenciais são usadas para montar RTSP dinamicamente
+        - stream_path possui valor padrão se não definido
+
+    Segurança:
+        - Acesso restrito a usuários autenticados
+        - Isolamento por empresa (multi-tenant)
+
+    Possíveis melhorias:
+        - Evitar envio repetido de comandos (debounce/cache)
+        - Validar disponibilidade do agente antes de enviar comandos
+        - Criptografar credenciais RTSP
+        - Implementar controle de taxa (rate limit)
+        - Suportar múltiplos agentes
+    """
+    
+    ====================================================================
+    
+    Ela transforma os frames em vídeo contínuo (MJPEG). Isso já é nível bem avançado.
+
+✅ Função documentada
+# ==============================
+# 🎥 VIDEO STREAM
+# ==============================
+@stream_bp.route("/video/<camera_id>")
+@login_required
+def video(camera_id):
+    """
+    Fornece stream de vídeo em tempo real (MJPEG) para uma câmera específica.
+
+    Esta função:
+    - Recebe o identificador da câmera via URL
+    - Recupera frames do cache em memória (frames_cache)
+    - Gera um fluxo contínuo de imagens (MJPEG)
+    - Retorna o stream para o navegador
+
+    Fluxo:
+    1. Recebe camera_id pela URL
+    2. Inicia gerador contínuo (loop infinito)
+    3. Busca frame mais recente no cache
+    4. Se não houver frame:
+        - Aguarda (sleep)
+        - Continua loop
+    5. Se houver frame:
+        - Envia no formato multipart (MJPEG)
+    6. Repete continuamente (stream ao vivo)
+
+    Args:
+        camera_id (str): Identificador único da câmera
+
+    Returns:
+        Response:
+            - Stream contínuo no formato MJPEG
+            - Content-Type: multipart/x-mixed-replace
+
+    Formato do Stream:
+        - Boundary: frame
+        - Tipo: image/jpeg
+        - Estrutura:
+            --frame
+            Content-Type: image/jpeg
+            [dados binários]
+
+    Fonte dos Dados:
+        - frames_cache[camera_id]: último frame recebido do agente
+
+    Observações:
+        - Utiliza polling contínuo (loop infinito)
+        - Sempre envia o último frame disponível
+        - Não mantém histórico de frames
+
+    Performance:
+        - Delay de ~30ms entre frames (~33 FPS teórico)
+        - Delay adicional quando não há frame disponível
+
+    Segurança:
+        - Acesso restrito a usuários autenticados (@login_required)
+        - Não valida vínculo da câmera com empresa (pode ser melhorado)
+
+    Limitações:
+        - Cache em memória (não escalável)
+        - Não suporta múltiplas instâncias (sem Redis)
+        - Pode consumir CPU em loops intensivos
+
+    Possíveis melhorias:
+        - Validar se a câmera pertence à empresa do usuário
+        - Usar Redis para cache distribuído
+        - Implementar controle de FPS
+        - Adicionar timeout para desconexão
+        - Suportar WebSocket para melhor performance
+    """

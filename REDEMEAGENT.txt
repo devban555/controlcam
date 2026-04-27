@@ -1,0 +1,311 @@
+def validar_empresa(token, cursor):
+    """
+    Valida o token de API de uma empresa e retorna seus dados básicos.
+
+    Esta função:
+    - Recebe um token de autenticação enviado por um agente
+    - Consulta o banco de dados para verificar se o token é válido
+    - Retorna o ID da empresa associada ao token
+
+    Fluxo:
+    1. Recebe o token da requisição
+    2. Executa consulta na tabela 'empresas'
+    3. Verifica se existe correspondência com o token_api
+    4. Retorna os dados da empresa (ou None se inválido)
+
+    Args:
+        token (str): Token de API da empresa
+        cursor: Cursor ativo do banco de dados
+
+    Returns:
+        dict | None:
+            - Dados da empresa (ex: {"id": 1}) se válido
+            - None se o token não existir
+
+    Segurança:
+        - Utilizado como mecanismo de autenticação para agentes externos
+        - O token deve ser secreto e único por empresa
+        - Evita acesso não autorizado às rotas da API
+
+    Banco de Dados:
+        - Tabela: empresas
+        - Campo: token_api
+
+    Observações:
+        - A função não lança erro se o token for inválido (retorna None)
+        - Deve ser usada antes de qualquer operação protegida da API
+
+    Possíveis melhorias:
+        - Implementar expiração de token
+        - Registrar tentativas inválidas (log de segurança)
+        - Cachear validação para reduzir carga no banco
+    """
+
+========================================================================================
+
+
+def receber_ping():
+    """
+    Recebe e registra o resultado de um comando de ping enviado por um agente.
+
+    Esta função:
+    - Autentica a requisição via token da empresa (header Authorization)
+    - Recebe dados do agente (IP alvo e resultado do ping)
+    - Registra a execução do comando no banco de dados
+    - Retorna status de sucesso para o agente
+
+    Fluxo:
+    1. Obtém token do header Authorization
+    2. Valida token da empresa
+    3. Extrai dados JSON da requisição (ip, resultado)
+    4. Obtém timestamp atual
+    5. Insere registro na tabela 'comandos'
+       - Tipo: 'ping'
+       - Status: 'executado'
+    6. Confirma a transação (commit)
+    7. Retorna resposta JSON de sucesso
+
+    Headers:
+        Authorization (str): Token de API da empresa
+
+    Body (JSON):
+        ip (str): Endereço IP alvo do ping
+        resultado (str): Resultado da execução (ex: sucesso, falha, latência)
+
+    Returns:
+        JSON:
+            {"status": "ok"} em caso de sucesso
+
+        Erros:
+            401: Token ausente
+            403: Token inválido
+
+    Segurança:
+        - Validação obrigatória de token por empresa
+        - Impede envio de dados por agentes não autorizados
+
+    Banco de Dados:
+        - Tabela: comandos
+        - Tipo: 'ping'
+        - Status: 'executado'
+        - agente_id obtido via subquery
+
+    Observações:
+        - Assume que existe pelo menos um agente por empresa (LIMIT 1)
+        - Não valida formato do IP recebido
+        - Não trata diferentes tipos de resultado (texto livre)
+
+    Possíveis melhorias:
+        - Validar formato do IP
+        - Associar corretamente ao agente específico (evitar LIMIT 1)
+        - Criar tipos estruturados de resultado (latência, timeout, etc.)
+        - Implementar logs para falhas de execução
+    """
+
+======================================================================================
+
+def agent_heartbeat():
+    """
+    Gerencia o heartbeat do agente e entrega comandos pendentes.
+
+    Esta função é responsável por:
+    - Autenticar o agente via token da empresa
+    - Registrar/atualizar o estado do agente (heartbeat)
+    - Criar automaticamente o agente caso não exista
+    - Buscar comandos pendentes para execução
+    - Retornar o próximo comando disponível ao agente
+
+    Fluxo:
+    1. Recebe dados JSON do agente
+    2. Obtém token (header Authorization ou body)
+    3. Valida token da empresa
+    4. Identifica ou cria agente (nome_maquina)
+    5. Atualiza último heartbeat e IP local
+    6. Busca comando pendente para o agente
+    7. Se existir:
+        - Marca como "enviado"
+        - Retorna comando ao agente
+    8. Caso contrário:
+        - Retorna status "ok" sem comando
+
+    Headers:
+        Authorization (str): Token de API da empresa (opcional se enviado no body)
+
+    Body (JSON):
+        token (str, opcional): Token da empresa
+        nome_maquina (str): Identificador único do agente
+        ip_local (str): IP local da máquina
+
+    Returns:
+        JSON:
+            Caso exista comando:
+            {
+                "status": "ok",
+                "comando": {
+                    "id": int,
+                    "tipo": str,
+                    "alvo": str,
+                    "resultado": str
+                }
+            }
+
+            Caso não exista comando:
+            {
+                "status": "ok"
+            }
+
+        Erros:
+            401: Token ausente
+            403: Token inválido
+
+    Segurança:
+        - Autenticação via token por empresa
+        - Isolamento de dados por empresa_id
+
+    Banco de Dados:
+        - Tabela: agentes (controle de estado)
+        - Tabela: comandos (fila de execução)
+
+    Comportamento do Agente:
+        - O agente se registra automaticamente no primeiro heartbeat
+        - Heartbeat atualiza presença (ultimo_heartbeat)
+        - Recebe comandos pendentes de forma sequencial (fila)
+
+    Observações:
+        - Identificação do agente baseada em 'nome_maquina'
+        - Apenas um comando é retornado por requisição (LIMIT 1)
+        - Ordem FIFO (ORDER BY id ASC)
+        - Campo 'resultado' já pode vir preenchido em alguns casos
+
+    Possíveis melhorias:
+        - Usar identificador único mais robusto (UUID do agente)
+        - Implementar timeout para agentes offline
+        - Permitir retorno de múltiplos comandos (batch)
+        - Criar fila mais robusta (ex: Redis, RabbitMQ)
+        - Adicionar status "executando" antes de "executado"
+    """
+
+==============================================================================
+
+def agent_resultado():
+    """
+    Recebe e registra o resultado da execução de um comando enviado ao agente.
+
+    Esta função:
+    - Autentica a requisição via token da empresa
+    - Recebe o ID do comando executado e seu resultado
+    - Atualiza o status do comando para 'executado'
+    - Armazena o resultado e o timestamp da execução
+    - Retorna confirmação de recebimento
+
+    Fluxo:
+    1. Obtém token do header Authorization
+    2. Valida token da empresa
+    3. Extrai dados JSON (comando_id, resultado)
+    4. Atualiza o comando no banco:
+        - status → 'executado'
+        - resultado → conteúdo retornado pelo agente
+        - executado_em → timestamp atual
+    5. Confirma transação (commit)
+    6. Retorna resposta de confirmação
+
+    Headers:
+        Authorization (str): Token de API da empresa
+
+    Body (JSON):
+        comando_id (int): ID do comando executado
+        resultado (str): Resultado da execução (output, erro, etc.)
+
+    Returns:
+        JSON:
+            {"status": "recebido"} em caso de sucesso
+
+        Erros:
+            401: Token ausente
+            403: Token inválido
+
+    Segurança:
+        - Validação por token de empresa
+        - Garante que o comando pertence à empresa (WHERE empresa_id)
+
+    Banco de Dados:
+        - Tabela: comandos
+        - Campos atualizados:
+            - status
+            - resultado
+            - executado_em
+
+    Observações:
+        - Não valida se o comando existe antes do UPDATE
+        - Não diferencia sucesso/erro (resultado é texto livre)
+        - Não verifica se o comando já foi executado anteriormente
+
+    Possíveis melhorias:
+        - Validar existência do comando antes de atualizar
+        - Adicionar campo de status mais detalhado (sucesso/erro)
+        - Armazenar logs estruturados (JSON ao invés de texto)
+        - Implementar idempotência (evitar múltiplas execuções do mesmo comando)
+    """
+
+====================================================================================================
+
+def receber_stream():
+    """
+    Recebe e armazena frames de vídeo enviados por agentes (câmeras).
+
+    Esta função:
+    - Recebe requisições contendo frames de vídeo (imagem)
+    - Identifica a câmera pelo camera_id
+    - Armazena o frame mais recente em cache (memória)
+    - Retorna confirmação simples ao agente
+
+    Fluxo:
+    1. Obtém token do header Authorization
+    2. Valida presença do token (não valida autenticidade)
+    3. Recebe dados via multipart/form-data:
+        - camera_id
+        - frame (arquivo de imagem)
+    4. Valida campos obrigatórios
+    5. Lê o conteúdo do frame
+    6. Armazena no cache em memória (frames_cache)
+    7. Retorna "ok"
+
+    Headers:
+        Authorization (str): Token da empresa (obrigatório, mas não validado)
+
+    Form-data:
+        camera_id (str): Identificador da câmera
+        frame (file): Imagem capturada (frame atual)
+
+    Returns:
+        str:
+            "ok" → sucesso
+            "erro" → token ausente (401)
+            "dados inválidos" → campos faltando (400)
+
+    Armazenamento:
+        - Utiliza cache em memória (dict global: frames_cache)
+        - Estrutura:
+            frames_cache[camera_id] = bytes do frame
+
+    Observações:
+        - Apenas o último frame é mantido por câmera
+        - Frames anteriores são sobrescritos
+        - Não há persistência em disco ou banco
+        - Não há validação do token (apenas presença)
+
+    Limitações:
+        - Consumo de memória pode crescer com múltiplas câmeras
+        - Cache não é compartilhado entre instâncias (não escalável)
+        - Frames são perdidos em reinício do servidor
+
+    Possíveis melhorias:
+        - Validar token com validar_empresa()
+        - Usar Redis para cache distribuído
+        - Implementar compressão ou resize de imagens
+        - Criar endpoint para leitura/stream dos frames
+        - Controlar taxa de envio (rate limit)
+    """
+
+
+============================================================================

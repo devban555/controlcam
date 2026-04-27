@@ -1,0 +1,290 @@
+def admin_dashboard():
+    """
+    Renderiza o painel administrativo principal do sistema.
+
+    Esta função é responsável por:
+    - Garantir que o usuário esteja autenticado e seja administrador
+    - Buscar todas as empresas cadastradas no banco de dados
+    - Buscar todos os usuários e associar suas respectivas empresas
+    - Enviar os dados para o template 'admin.html'
+
+    Fluxo:
+    1. Conecta ao banco de dados
+    2. Consulta lista de empresas (ordenadas por ID decrescente)
+    3. Consulta lista de usuários com JOIN nas empresas
+    4. Fecha o cursor
+    5. Renderiza a página com os dados
+
+    Returns:
+        Response: Página HTML do dashboard administrativo com listas de empresas e usuários
+
+    Segurança:
+        - Requer login (@login_required)
+        - Requer permissão de administrador (@admin_required)
+    """
+    
+    =================================================================
+    
+    def criar_usuario():
+    """
+    Cria um novo usuário vinculado a uma empresa no sistema.
+
+    Esta função:
+    - Recebe dados do formulário (empresa_id, username, senha)
+    - Valida se os campos obrigatórios foram preenchidos
+    - Criptografa a senha do usuário
+    - Insere o novo usuário no banco de dados com tipo 'empresa'
+    - Redireciona para o dashboard administrativo
+
+    Fluxo:
+    1. Captura dados do formulário via POST
+    2. Valida campos obrigatórios
+    3. Gera hash seguro da senha
+    4. Insere usuário no banco
+    5. Confirma transação (commit)
+    6. Redireciona para o painel admin
+
+    Args (form-data):
+        empresa_id (str): ID da empresa vinculada
+        username (str): Nome de usuário
+        senha (str): Senha em texto puro (será criptografada)
+
+    Returns:
+        Response:
+            - Redireciona para o dashboard em caso de sucesso
+            - Retorna mensagem simples em caso de erro de validação
+
+    Segurança:
+        - Requer autenticação (@login_required)
+        - Requer privilégio de administrador (@admin_required)
+        - Senha armazenada com hash seguro (generate_password_hash)
+
+    Observações:
+        - Não há verificação de usuário duplicado (pode ser implementado futuramente)
+        - Não há validação de força de senha
+    """
+    
+    ===================================================================================
+    
+    def excluir_usuario(usuario_id):
+    """
+    Remove um usuário do sistema com base no ID informado.
+
+    Esta função:
+    - Recebe o ID do usuário via parâmetro da URL
+    - Executa a exclusão direta no banco de dados
+    - Confirma a transação
+    - Redireciona para o dashboard administrativo
+
+    Fluxo:
+    1. Recebe o usuario_id pela URL
+    2. Conecta ao banco de dados
+    3. Executa comando DELETE na tabela 'usuarios'
+    4. Realiza commit da operação
+    5. Fecha o cursor
+    6. Redireciona para o painel admin
+
+    Args:
+        usuario_id (int): ID do usuário a ser removido
+
+    Returns:
+        Response: Redireciona para o dashboard administrativo após exclusão
+
+    Segurança:
+        - Requer autenticação (@login_required)
+        - Requer privilégio de administrador (@admin_required)
+
+    Atenção:
+        - A exclusão é permanente (não há soft delete)
+        - Não há verificação se o usuário existe antes da exclusão
+        - Não há confirmação adicional (ex: modal de confirmação no frontend)
+
+    Possíveis melhorias:
+        - Implementar soft delete (campo 'ativo' ou 'deleted_at')
+        - Validar existência do usuário antes de excluir
+        - Impedir exclusão do próprio admin logado (proteção adicional)
+    """
+    
+    =======================================================================================
+    
+    def criar_empresa():
+    """
+    Cria uma nova empresa no sistema e gera automaticamente um token de API.
+
+    Esta função:
+    - Recebe o nome da empresa via formulário
+    - Valida se o nome foi informado
+    - Gera um token único e seguro para integração via API
+    - Insere a empresa no banco de dados com data de criação
+    - Redireciona para o dashboard administrativo
+
+    Fluxo:
+    1. Captura o nome da empresa via POST
+    2. Valida se o campo foi preenchido
+    3. Gera token seguro com secrets.token_hex
+    4. Insere empresa no banco com timestamp atual
+    5. Confirma transação (commit)
+    6. Redireciona para o painel admin
+
+    Args (form-data):
+        nome_empresa (str): Nome da empresa a ser cadastrada
+
+    Returns:
+        Response:
+            - Redireciona para o dashboard em caso de sucesso
+            - Retorna mensagem simples em caso de erro de validação
+
+    Segurança:
+        - Requer autenticação (@login_required)
+        - Requer privilégio de administrador (@admin_required)
+        - Token gerado com alta entropia (secrets.token_hex)
+
+    Token API:
+        - Utilizado para autenticação de integrações externas
+        - Deve ser mantido em sigilo
+        - Gerado com 64 caracteres hexadecimais (32 bytes)
+
+    Observações:
+        - Não há validação de nome duplicado
+        - Token não possui rotação automática (pode ser implementado futuramente)
+
+    Possíveis melhorias:
+        - Validar unicidade do nome da empresa
+        - Implementar rotação/revogação de token
+        - Exibir o token apenas uma vez ao criar (segurança)
+    """
+    
+    ========================================================================================
+    
+    def excluir_empresa(empresa_id):
+    """
+    Remove uma empresa do sistema com base no ID informado.
+
+    Esta função:
+    - Recebe o ID da empresa via parâmetro da URL
+    - Executa a exclusão direta no banco de dados
+    - Confirma a transação
+    - Redireciona para o dashboard administrativo
+
+    Fluxo:
+    1. Recebe o empresa_id pela URL
+    2. Conecta ao banco de dados
+    3. Executa DELETE na tabela 'empresas'
+    4. Realiza commit da operação
+    5. Fecha o cursor
+    6. Redireciona para o painel admin
+
+    Args:
+        empresa_id (int): ID da empresa a ser removida
+
+    Returns:
+        Response: Redireciona para o dashboard administrativo
+
+    Segurança:
+        - Requer autenticação (@login_required)
+        - Requer privilégio de administrador (@admin_required)
+
+    Atenção:
+        - A exclusão é permanente (não há soft delete)
+        - Pode impactar dados relacionados (usuários, agentes, etc.)
+        - Não há verificação de dependências antes da exclusão
+
+    Possíveis melhorias:
+        - Implementar soft delete
+        - Validar vínculos antes de excluir (FK / cascade controlado)
+        - Criar confirmação no frontend
+        - Registrar log de auditoria
+    """
+    
+    ==================================================================================
+    
+    def ver_agentes(empresa_id):
+    """
+    Lista todos os agentes vinculados a uma empresa específica.
+
+    Esta função:
+    - Recebe o ID da empresa via URL
+    - Consulta os agentes associados a essa empresa
+    - Ordena os agentes pelo último heartbeat (atividade recente)
+    - Renderiza a página administrativa de agentes
+
+    Fluxo:
+    1. Recebe o empresa_id pela URL
+    2. Conecta ao banco de dados
+    3. Consulta agentes da empresa
+    4. Ordena por 'ultimo_heartbeat' (mais recentes primeiro)
+    5. Fecha a conexão com o banco
+    6. Renderiza template com os dados
+
+    Args:
+        empresa_id (int): ID da empresa
+
+    Returns:
+        Response: Página HTML com a lista de agentes da empresa
+
+    Segurança:
+        - Requer autenticação (@login_required)
+        - Requer privilégio de administrador (@admin_required)
+
+    Banco de Dados:
+        - Tabela: agentes
+        - Filtro: empresa_id
+        - Ordenação: ultimo_heartbeat DESC
+
+    Observações:
+        - Usa RealDictCursor para retorno em formato de dicionário
+        - 'ultimo_heartbeat' indica última comunicação do agente (status online/offline)
+
+    Possíveis melhorias:
+        - Paginação de resultados
+        - Filtro por status (online/offline)
+        - Exibir tempo relativo (ex: "ativo há 2 min")
+    """
+    
+    ================================================================================================
+    
+    def alterar_empresa_usuario():
+    """
+    Atualiza a empresa associada a um usuário no sistema.
+
+    Esta função:
+    - Recebe o ID do usuário e o novo ID da empresa via formulário
+    - Atualiza o vínculo do usuário com a empresa no banco de dados
+    - Persiste a alteração
+    - Redireciona para o dashboard administrativo
+
+    Fluxo:
+    1. Captura usuario_id e empresa_id via POST
+    2. Conecta ao banco de dados
+    3. Executa UPDATE na tabela 'usuarios'
+    4. Confirma a transação (commit)
+    5. Fecha cursor e conexão
+    6. Redireciona para o painel admin
+
+    Args (form-data):
+        usuario_id (str/int): ID do usuário a ser atualizado
+        empresa_id (str/int): Novo ID da empresa
+
+    Returns:
+        Response: Redireciona para o dashboard administrativo
+
+    Segurança:
+        - Requer autenticação (@login_required)
+        - Requer privilégio de administrador (@admin_required)
+
+    Banco de Dados:
+        - Tabela: usuarios
+        - Campo atualizado: empresa_id
+
+    Observações:
+        - Não há validação se o usuário ou empresa existem
+        - Não há verificação de mudança (sempre executa UPDATE)
+        - Pode ser usado para transferir usuários entre empresas
+
+    Possíveis melhorias:
+        - Validar existência do usuário e da empresa
+        - Evitar atualização desnecessária (se já estiver vinculado)
+        - Registrar histórico de mudanças (auditoria)
+    """
+    
+    
