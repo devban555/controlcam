@@ -723,7 +723,7 @@ def pesquisa():
             WHERE empresa_id = %s
             AND (
                 nome_camera ILIKE %s
-                OR ip_camera ILIKE %sy
+                OR ip_camera ILIKE %s
                 OR caixa ILIKE %s
                 OR rua1 ILIKE %s
                 OR rua2 ILIKE %s
