@@ -1,4 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, send_file
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    session,
+    redirect,
+    url_for,
+    jsonify
+)
 from routes.auth import login_required
 from db import get_db
 import datetime
@@ -311,7 +319,7 @@ def cadastro():
         try:
             cursor.execute("""
                 INSERT INTO cameras
-                (nome_camera, ip_camera, caixa, rua1, rua2, mac, usuario, senha, stream_path, empresa_id)
+                (nome_camera, ip_camera, caixa, rua1, rua2, mac, usuario, senha, empresa_id)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 request.form.get("nome_camera"),
@@ -322,7 +330,6 @@ def cadastro():
                 request.form.get("mac"),
                 request.form.get("usuario"),
                 request.form.get("senha"),
-                request.form.get("stream_path"),
                 empresa_id
             ))
 
@@ -1435,4 +1442,1240 @@ def relatorio_pdf():
         as_attachment=True,
         download_name="relatorio_cameras_offline.pdf",
         mimetype="application/pdf"
+    )
+
+@main_bp.route("/dashboard")
+@login_required
+def dashboard():
+
+    return render_template("dashboard.html")
+
+
+@main_bp.route("/cadastro-dispositivo", methods=["GET", "POST"])
+@login_required
+def cadastro_dispositivo():
+
+    if request.method == "POST":
+
+        conn = get_db()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT empresa_id FROM usuarios WHERE id = %s",
+            (session["usuario_id"],)
+        )
+
+        usuario = cursor.fetchone()
+
+        if not usuario:
+
+            cursor.close()
+            conn.close()
+
+            return redirect(url_for("auth.logout"))
+
+        empresa_id = usuario[0]
+
+        try:
+
+            cursor.execute("""
+
+                INSERT INTO dispositivos (
+
+                    empresa_id,
+
+                    nome,
+                    categoria,
+
+                    fabricante,
+                    modelo,
+
+                    ip,
+                    mac,
+                    hostname,
+
+                    usuario,
+                    senha,
+
+                    ssh_ativo,
+                    snmp_ativo,
+                    api_ativa,
+
+                    community_snmp,
+
+                    porta_http,
+                    porta_https,
+                    porta_rtsp,
+                    porta_ssh,
+
+                    status,
+                    localizacao,
+                    observacao
+
+                )
+
+                VALUES (
+
+                    %s,
+
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+                    %s,
+
+                    %s,
+
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+                    %s
+
+                )
+
+                ON CONFLICT (ip)
+
+                DO UPDATE SET
+
+                    nome = EXCLUDED.nome,
+                    categoria = EXCLUDED.categoria,
+
+                    fabricante = EXCLUDED.fabricante,
+                    modelo = EXCLUDED.modelo,
+
+                    mac = EXCLUDED.mac,
+                    hostname = EXCLUDED.hostname,
+
+                    usuario = EXCLUDED.usuario,
+                    senha = EXCLUDED.senha,
+
+                    ssh_ativo = EXCLUDED.ssh_ativo,
+                    snmp_ativo = EXCLUDED.snmp_ativo,
+                    api_ativa = EXCLUDED.api_ativa,
+
+                    community_snmp = EXCLUDED.community_snmp,
+
+                    porta_http = EXCLUDED.porta_http,
+                    porta_https = EXCLUDED.porta_https,
+                    porta_rtsp = EXCLUDED.porta_rtsp,
+                    porta_ssh = EXCLUDED.porta_ssh,
+
+                    status = EXCLUDED.status,
+                    localizacao = EXCLUDED.localizacao,
+                    observacao = EXCLUDED.observacao
+
+                RETURNING id
+
+            """, (
+
+                empresa_id,
+
+                request.form.get("nome"),
+                request.form.get("categoria") or "rede",
+
+                request.form.get("fabricante"),
+                request.form.get("modelo"),
+
+                request.form.get("ip"),
+                request.form.get("mac"),
+                request.form.get("hostname"),
+
+                request.form.get("usuario"),
+                request.form.get("senha"),
+
+                True if request.form.get("ssh_ativo") else False,
+                True if request.form.get("snmp_ativo") else False,
+                True if request.form.get("api_ativa") else False,
+
+                request.form.get("community_snmp"),
+
+                int(request.form.get("porta_http") or 80),
+                int(request.form.get("porta_https") or 443),
+                int(request.form.get("porta_rtsp") or 554),
+                int(request.form.get("porta_ssh") or 22),
+
+                request.form.get("status") or "online",
+                request.form.get("localizacao"),
+                request.form.get("observacao")
+
+            ))
+
+            dispositivo_id = cursor.fetchone()[0]
+
+            conn.commit()
+
+        except Exception as e:
+
+            conn.rollback()
+
+            cursor.close()
+            conn.close()
+
+            return f"Erro ao cadastrar dispositivo: {e}"
+
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for("main.dispositivos"))
+
+    return render_template("cadastro_dispositivo.html")
+
+@main_bp.route("/discovery")
+@login_required
+def discovery():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+
+        UPDATE dispositivos
+
+        SET
+
+            ping_ativo = FALSE,
+            status = 'offline'
+
+        WHERE
+
+            ultimo_ping IS NULL
+
+            OR
+
+            ultimo_ping < NOW() - INTERVAL '120 seconds'
+
+    """)
+
+    conn.commit()
+
+    # ==========================================
+    # EMPRESA DO USUÁRIO
+    # ==========================================
+
+    cursor.execute(
+        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        (session["usuario_id"],)
+    )
+
+    usuario = cursor.fetchone()
+
+    if not usuario:
+
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for("auth.logout"))
+
+    empresa_id = usuario[0]
+
+    # ==========================================
+    # NOME DA EMPRESA
+    # ==========================================
+
+    cursor.execute("""
+
+        SELECT nome_empresa
+
+        FROM empresas
+
+        WHERE id = %s
+
+    """, (empresa_id,))
+
+    empresa = cursor.fetchone()
+
+    nome_empresa = empresa[0] if empresa else "Empresa"
+
+    # ==========================================
+    # STATUS DO AGENT
+    # ==========================================
+
+    agente_status = "OFF"
+    ultimo_heartbeat = None
+
+    cursor.execute("""
+
+        SELECT ultimo_heartbeat
+
+        FROM agentes
+
+        WHERE empresa_id = %s
+
+        ORDER BY ultimo_heartbeat DESC
+
+        LIMIT 1
+
+    """, (empresa_id,))
+
+    agente = cursor.fetchone()
+
+    if agente and agente[0]:
+
+        ultimo_heartbeat = agente[0]
+
+        agora = datetime.datetime.now()
+
+        if (agora - agente[0]).total_seconds() < 60:
+
+            agente_status = "ON"
+
+    # ==========================================
+    # INVENTÁRIO
+    # ==========================================
+
+    cursor.execute("""
+
+        SELECT
+
+            id,
+            ip,
+            mac,
+            hostname,
+
+            ssh,
+            snmp,
+            http,
+            https,
+            rtsp,
+
+            ping_ativo,
+            latencia,
+
+            ultima_descoberta
+
+        FROM inventario_dispositivos
+            
+        WHERE empresa_id = %s
+         AND vinculado = FALSE
+         
+        ORDER BY ultima_descoberta DESC
+
+    """, (empresa_id,))
+
+    rows = cursor.fetchall()
+
+    agora = datetime.datetime.now()
+
+    dispositivos = []
+
+    for d in rows:
+
+        ultima_descoberta = d[11]
+
+        status_descoberta = "offline"
+
+        if ultima_descoberta:
+
+            idade = (agora - ultima_descoberta).total_seconds()
+
+            if idade <= 120:
+
+                status_descoberta = "online"
+
+            elif idade <= 600:
+
+                status_descoberta = "atencao"
+
+        dispositivos.append({
+
+            "id": d[0],
+            "ip": d[1],
+            "mac": d[2],
+            "hostname": d[3],
+
+            "ssh": d[4],
+            "snmp": d[5],
+            "http": d[6],
+            "https": d[7],
+            "rtsp": d[8],
+
+            "ping_ativo": d[9],
+            "latencia": d[10],
+
+            "ultima_descoberta": d[11],
+
+            "status_descoberta": status_descoberta
+
+        })
+
+    cursor.close()
+    conn.close()
+
+    print(f"Discovery carregou {len(dispositivos)} dispositivos")
+
+    return render_template(
+
+        "discovery.html",
+
+        dispositivos=dispositivos,
+
+        agente_status=agente_status,
+        ultimo_heartbeat=ultimo_heartbeat,
+
+        nome_empresa=nome_empresa
+
+    )
+
+
+@main_bp.route("/dispositivos/adicionar", methods=["POST"])
+def adicionar_dispositivo():
+
+    data = request.get_json()
+
+    inventario_id = data.get("inventario_id")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+
+        # =========================
+        # BUSCAR INVENTÁRIO
+        # =========================
+        cursor.execute("""
+
+            SELECT
+
+                empresa_id,
+
+                ip,
+                mac,
+                hostname,
+
+                ssh,
+                snmp,
+                http,
+                https,
+                rtsp,
+
+                ping_ativo,
+                latencia
+
+            FROM inventario_dispositivos
+
+            WHERE id = %s
+
+        """, (inventario_id,))
+
+        d = cursor.fetchone()
+
+        if not d:
+
+            cursor.close()
+            conn.close()
+
+            return jsonify({
+
+                "erro": "Dispositivo não encontrado no inventário"
+
+            }), 404
+
+        empresa_id = d[0]
+
+        ip = d[1]
+        mac = d[2]
+        hostname = d[3]
+
+        ssh = d[4]
+        snmp = d[5]
+
+        ping_ativo = d[9]
+        latencia = d[10]
+
+        # =========================
+        # INSERT / UPDATE
+        # =========================
+        cursor.execute("""
+
+            INSERT INTO dispositivos (
+
+                empresa_id,
+
+                nome,
+                categoria,
+
+                ip,
+                mac,
+                hostname,
+
+                ssh_ativo,
+                snmp_ativo,
+
+                ping_ativo,
+                latencia,
+
+                status,
+                origem,
+
+                inventario_id
+
+            )
+
+            VALUES (
+
+                %s,
+
+                %s,
+                %s,
+
+                %s,
+                %s,
+                %s,
+
+                %s,
+                %s,
+
+                %s,
+                %s,
+
+                %s,
+                %s,
+
+                %s
+
+            )
+
+            ON CONFLICT (ip)
+
+            DO UPDATE SET
+
+                empresa_id = EXCLUDED.empresa_id,
+
+                nome = EXCLUDED.nome,
+
+                mac = EXCLUDED.mac,
+                hostname = EXCLUDED.hostname,
+
+                ssh_ativo = EXCLUDED.ssh_ativo,
+                snmp_ativo = EXCLUDED.snmp_ativo,
+
+                ping_ativo = EXCLUDED.ping_ativo,
+                latencia = EXCLUDED.latencia,
+
+                status = EXCLUDED.status,
+                origem = EXCLUDED.origem,
+
+                inventario_id = EXCLUDED.inventario_id
+
+            RETURNING id
+
+        """, (
+
+            empresa_id,
+
+            hostname or ip,
+            "rede",
+
+            ip,
+            mac,
+            hostname,
+
+            ssh,
+            snmp,
+
+            ping_ativo,
+            latencia,
+
+            "online",
+            "discovery",
+
+            inventario_id
+
+        ))
+
+        dispositivo_id = cursor.fetchone()[0]
+
+        # =========================
+        # MARCAR VINCULADO
+        # =========================
+        cursor.execute("""
+
+            UPDATE inventario_dispositivos
+
+            SET vinculado = TRUE
+
+            WHERE id = %s
+
+        """, (inventario_id,))
+
+        conn.commit()
+
+    except Exception as e:
+
+        conn.rollback()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+
+            "erro": f"Erro interno no banco de dados: {str(e)}"
+
+        }), 500
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+
+        "status": "ok",
+        "dispositivo_id": dispositivo_id
+
+    })
+
+
+@main_bp.route("/dispositivos")
+@login_required
+def dispositivos():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+
+        UPDATE dispositivos
+
+        SET
+
+            ping_ativo = FALSE,
+            status = 'offline'
+
+        WHERE
+
+            ultimo_ping IS NULL
+
+            OR
+
+            ultimo_ping < NOW() - INTERVAL '120 seconds'
+
+    """)
+
+    conn.commit()
+
+    cursor.execute(
+        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        (session["usuario_id"],)
+    )
+
+    usuario = cursor.fetchone()
+
+    if not usuario:
+
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for("auth.logout"))
+
+    empresa_id = usuario[0]
+
+    # ==========================
+    # NOME DA EMPRESA
+    # ==========================
+
+    cursor.execute("""
+
+        SELECT nome_empresa
+
+        FROM empresas
+
+        WHERE id = %s
+
+    """, (empresa_id,))
+
+    empresa = cursor.fetchone()
+
+    nome_empresa = empresa[0] if empresa else "Empresa"
+
+    # ==========================
+    # STATUS DO AGENTE
+    # ==========================
+
+    agente_status = "OFF"
+
+    ultimo_heartbeat = None
+
+    cursor.execute("""
+
+        SELECT ultimo_heartbeat
+
+        FROM agentes
+
+        WHERE empresa_id = %s
+
+        ORDER BY ultimo_heartbeat DESC
+
+        LIMIT 1
+
+    """, (empresa_id,))
+
+    agente = cursor.fetchone()
+
+    if agente and agente[0]:
+
+        ultimo_heartbeat = agente[0]
+
+        agora = datetime.datetime.now()
+
+        if (agora - agente[0]).total_seconds() < 60:
+
+            agente_status = "ON"
+
+    # ==========================
+    # DISPOSITIVOS
+    # ==========================
+
+    cursor.execute("""
+
+        SELECT
+
+            id,
+            nome,
+            categoria,
+
+            fabricante,
+            modelo,
+
+            ip,
+            mac,
+            hostname,
+
+            status,
+
+            ssh_ativo,
+            snmp_ativo,
+            api_ativa,
+
+            porta_http,
+            porta_https,
+            porta_rtsp,
+            porta_ssh,
+
+            ping_ativo,
+            latencia
+
+        FROM dispositivos
+
+        WHERE empresa_id = %s
+
+        ORDER BY categoria, nome
+
+    """, (empresa_id,))
+
+    rows = cursor.fetchall()
+
+    dispositivos = []
+
+    for d in rows:
+
+        dispositivos.append({
+
+            "id": d[0],
+
+            "nome": d[1],
+            "categoria": d[2],
+
+            "fabricante": d[3],
+            "modelo": d[4],
+
+            "ip": d[5],
+            "mac": d[6],
+            "hostname": d[7],
+
+            "status": d[8],
+
+            "ssh": d[9],
+            "snmp": d[10],
+            "api": d[11],
+
+            "porta_http": d[12],
+            "porta_https": d[13],
+            "porta_rtsp": d[14],
+            "porta_ssh": d[15],
+
+            "ping_ativo": d[16],
+            "latencia": d[17]
+
+        })
+
+    cursor.close()
+    conn.close()
+
+    total_dispositivos = len(dispositivos)
+
+    online = sum(
+        1 for d in dispositivos
+        if d["status"] == "online"
+    )
+
+    if total_dispositivos > 0:
+
+        saude_rede = round(
+            (online / total_dispositivos) * 100
+        )
+
+    else:
+
+        saude_rede = 0
+
+    if saude_rede >= 90:
+
+        saude_cor = "verde"
+
+    elif saude_rede >= 70:
+
+        saude_cor = "amarelo"
+
+    else:
+
+        saude_cor = "vermelho"
+
+    return render_template(
+
+        "dispositivos.html",
+
+        dispositivos=dispositivos,
+        agente_status=agente_status,
+        ultimo_heartbeat=ultimo_heartbeat,
+        nome_empresa = nome_empresa,
+        saude_rede=saude_rede,
+        saude_cor=saude_cor
+
+    )
+
+@main_bp.route(
+    "/dispositivos/<int:id>/editar",
+    methods=["GET", "POST"]
+)
+
+@login_required
+def editar_dispositivo(id):
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        (session["usuario_id"],)
+    )
+
+    usuario = cursor.fetchone()
+
+    if not usuario:
+
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for("auth.logout"))
+
+    empresa_id = usuario[0]
+
+    # ==========================================
+    # SALVAR ALTERAÇÕES
+    # ==========================================
+
+    if request.method == "POST":
+
+        try:
+
+            cursor.execute("""
+
+                UPDATE dispositivos
+
+                SET
+
+                    nome = %s,
+                    categoria = %s,
+                    tipo_dispositivo = %s,
+
+                    fabricante = %s,
+                    modelo = %s,
+
+                    ip = %s,
+                    hostname = %s,
+                    mac = %s,
+
+                    localizacao = %s,
+                    endereco_fisico = %s
+
+                WHERE id = %s
+                  AND empresa_id = %s
+
+            """, (
+
+                request.form.get("nome"),
+                request.form.get("categoria"),
+                request.form.get("tipo_dispositivo"),
+
+                request.form.get("fabricante"),
+                request.form.get("modelo"),
+
+                request.form.get("ip"),
+                request.form.get("hostname"),
+                request.form.get("mac"),
+
+                request.form.get("localizacao"),
+                request.form.get("endereco_fisico"),
+
+                id,
+                empresa_id
+
+            ))
+
+            conn.commit()
+
+            return redirect(url_for("main.dispositivos"))
+
+        except Exception as e:
+
+            conn.rollback()
+
+            return f"Erro ao salvar dispositivo: {e}"
+
+    # ==========================================
+    # CARREGAR DISPOSITIVO
+    # ==========================================
+
+    cursor.execute("""
+
+        SELECT *
+
+        FROM dispositivos
+
+        WHERE id = %s
+          AND empresa_id = %s
+
+    """, (id, empresa_id))
+
+    colunas = [desc[0] for desc in cursor.description]
+
+    row = cursor.fetchone()
+
+    dispositivo = dict(zip(colunas, row)) if row else None
+
+    cursor.close()
+    conn.close()
+
+    if not dispositivo:
+        return "Dispositivo não encontrado"
+
+    return render_template(
+
+        "editar_dispositivo.html",
+
+        dispositivo=dispositivo
+
+    )
+
+@main_bp.route(
+    "/dispositivos/<int:id>/excluir",
+    methods=["POST"]
+)
+@login_required
+def excluir_dispositivo(id):
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute(
+            "SELECT empresa_id FROM usuarios WHERE id = %s",
+            (session["usuario_id"],)
+        )
+
+        usuario = cursor.fetchone()
+
+        if not usuario:
+            return redirect(url_for("auth.logout"))
+
+        empresa_id = usuario[0]
+
+        cursor.execute("""
+
+            DELETE FROM dispositivos
+
+            WHERE id = %s
+              AND empresa_id = %s
+
+        """, (id, empresa_id))
+
+        conn.commit()
+
+    except Exception as e:
+
+        conn.rollback()
+
+        return f"Erro ao excluir dispositivo: {e}"
+
+    finally:
+
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for("main.dispositivos"))
+
+@main_bp.route("/add-dispositivo", methods=["GET", "POST"])
+@login_required
+def add_dispositivo():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        (session["usuario_id"],)
+    )
+
+    usuario = cursor.fetchone()
+
+    if not usuario:
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for("auth.logout"))
+
+    empresa_id = usuario[0]
+
+    ip = request.form.get("ip")
+
+    if ip:
+
+        cursor.execute(
+            "SELECT id FROM dispositivos WHERE ip = %s",
+            (ip,)
+        )
+
+        if cursor.fetchone():
+            cursor.close()
+            conn.close()
+
+            return "Já existe um dispositivo cadastrado com este IP."
+
+        try:
+
+            cursor.execute("""
+
+                INSERT INTO dispositivos (
+
+                    empresa_id,
+
+                    nome,
+                    categoria,
+                    tipo_dispositivo,
+
+                    fabricante,
+                    modelo,
+
+                    ip,
+                    hostname,
+                    mac,
+
+                    localizacao,
+                    endereco_fisico,
+
+                    usuario_web,
+                    senha_web,
+
+                    usuario_ssh,
+                    senha_ssh,
+
+                    usuario_onvif,
+                    senha_onvif,
+
+                    community_snmp,
+
+                    porta_http,
+                    porta_https,
+                    porta_rtsp,
+                    porta_ssh,
+
+                    ssh_ativo,
+                    snmp_ativo,
+                    api_ativa,
+
+                    observacoes,
+
+                    origem,
+
+                    status,
+                    ping_ativo,
+                    latencia
+
+                )
+
+                VALUES (
+
+                    %s,
+
+                    %s,
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+
+                    %s,
+
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+
+                    %s,
+                    %s,
+                    %s,
+
+                    %s,
+
+                    'manual',
+
+                    'offline',
+                    FALSE,
+                    0
+
+                )
+
+            """, (
+
+                empresa_id,
+
+                request.form.get("nome"),
+                request.form.get("categoria"),
+                request.form.get("tipo_dispositivo"),
+
+                request.form.get("fabricante"),
+                request.form.get("modelo"),
+
+                request.form.get("ip"),
+                request.form.get("hostname"),
+                request.form.get("mac"),
+
+                request.form.get("localizacao"),
+                request.form.get("endereco_fisico"),
+
+                request.form.get("usuario_web"),
+                request.form.get("senha_web"),
+
+                request.form.get("usuario_ssh"),
+                request.form.get("senha_ssh"),
+
+                request.form.get("usuario_onvif"),
+                request.form.get("senha_onvif"),
+
+                request.form.get("community_snmp"),
+
+                request.form.get("porta_http") or 80,
+                request.form.get("porta_https") or 443,
+                request.form.get("porta_rtsp") or 554,
+                request.form.get("porta_ssh") or 22,
+
+                bool(request.form.get("ssh_ativo")),
+                bool(request.form.get("snmp_ativo")),
+                bool(request.form.get("api_ativa")),
+
+                request.form.get("observacoes")
+
+            ))
+
+            conn.commit()
+
+            return redirect(url_for("main.dispositivos"))
+
+        except Exception as e:
+
+            conn.rollback()
+
+            return f"Erro ao cadastrar dispositivo: {e}"
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "add_dispositivo.html"
+    )
+
+@main_bp.route("/dispositivo/<int:id>")
+@login_required
+def detalhe_dispositivo(id):
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        (session["usuario_id"],)
+    )
+
+    usuario = cursor.fetchone()
+
+    if not usuario:
+
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for("auth.logout"))
+
+    empresa_id = usuario[0]
+
+    cursor.execute("""
+
+        SELECT *
+
+        FROM dispositivos
+
+        WHERE id = %s
+        AND empresa_id = %s
+
+    """, (id, empresa_id))
+
+    dispositivo = cursor.fetchone()
+
+    if not dispositivo:
+
+        cursor.close()
+        conn.close()
+
+        return "Dispositivo não encontrado"
+
+    colunas = [desc[0] for desc in cursor.description]
+
+    dispositivo = dict(zip(colunas, dispositivo))
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "detalhe_dispositivo.html",
+        dispositivo=dispositivo
     )
