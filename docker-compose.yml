@@ -1,0 +1,42 @@
+services:
+
+  postgres:
+    image: postgres:17
+
+    container_name: controlcam-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: controlcam_db
+      POSTGRES_USER: devanderson
+      POSTGRES_PASSWORD: 123456
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  controlcam:
+
+    build: .
+
+    container_name: controlcam-web
+
+    restart: unless-stopped
+
+    ports:
+      - "5000:5000"
+
+    environment:
+      DB_HOST: postgres
+      DB_NAME: controlcam_db
+      DB_USER: devanderson
+      DB_PASSWORD: 123456
+
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

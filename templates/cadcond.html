@@ -1,10 +1,838 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" class="h-full bg-[#090d16]">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secticom | Novo Condomínio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom Scrollbar estilo Grafana/Zabbix */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { bg: #0d1220; }
+        ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+        /* Glassmorphism Classes */
+        .glass-panel { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-card { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.03); }
+        /* Animação do Pulso do Agente */
+        .pulse-green { animation: pulseG 2s infinite; }
+        @keyframes pulseG { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+    </style>
+</head>
+<body class="h-full text-slate-200 overflow-hidden flex">
+
+    <!-- SIDEBAR OPERACIONAL -->
+    <aside class="w-64 bg-[#0b0f19] border-r border-slate-800 flex flex-col justify-between hidden md:flex z-20">
+        <div>
+            <!-- Logo/Branding -->
+            <div class="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white shadow-lg shadow-blue-500/20">
+                    <i class="fas fa-shield-halved text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-md font-bold tracking-wider text-white">Secti<span class="text-blue-500">com</span></h1>
+                    <span class="text-[10px] text-slate-500 font-medium tracking-widest uppercase">Enterprise NOC</span>
+                </div>
+            </div>
+
+            <!-- Perfil do Operador de Plantão -->
+            <div class="p-4 border-b border-slate-800/60 bg-[#0d1321]/50 flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-sm font-semibold border border-slate-600">AG</div>
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-[#0b0f19] rounded-full"></span>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-300">Suporte Técnico</p>
+                    <p class="text-[10px] text-slate-500">Nível 2 — Campinas</p>
+                </div>
+            </div>
+
+            <!-- Navegação Principal -->
+            <nav class="p-4 space-y-1">
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-xs font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-lg transition-all">
+                    <i class="fas fa-chart-pie w-5 text-center text-slate-500"></i> Dashboard Global
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-lg transition-all">
+                    <i class="fas fa-building w-5 text-center text-blue-500"></i> Condomínios
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-xs font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-lg transition-all">
+                    <i class="fas fa-satellite-dish w-5 text-center text-slate-500"></i> Dispositivos IoT
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-xs font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-lg transition-all">
+                    <i class="fas fa-bell w-5 text-center text-slate-500"></i> Central de Alertas
+                </a>
+                <a href="#" class="flex items-center gap-3 px-3 py-2.5 text-xs font-medium text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-lg transition-all">
+                    <i class="fas fa-terminal w-5 text-center text-slate-500"></i> Terminais SSH
+                </a>
+            </nav>
+        </div>
+
+        <!-- Rodapé da Sidebar -->
+        <div class="p-4 border-t border-slate-800 bg-[#070a12] text-[11px] text-slate-500 flex flex-col gap-1">
+            <div class="flex justify-between"><span>SISTEMA:</span><span class="text-slate-400 font-mono">v4.12.2</span></div>
+            <div class="flex justify-between"><span>STATUS NOC:</span><span class="text-green-500 font-semibold"><i class="fas fa-circle text-[8px] mr-1"></i>ONLINE</span></div>
+        </div>
+    </aside>
+
+    <!-- CONTAINER PRINCIPAL -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden bg-[#0c101b]">
+
+        <!-- HEADER OPERACIONAL SUPERIOR -->
+        <header class="h-20 bg-[#0b0f19] border-b border-slate-800 px-6 flex items-center justify-between z-10 shrink-0">
+            <div>
+                <!-- Breadcrumbs -->
+                <div class="flex items-center gap-2 text-[10px] text-slate-500 font-medium uppercase tracking-wider mb-1">
+                    <span>Secticom</span> <i class="fas fa-chevron-right text-[8px]"></i>
+                    <span>Condomínios</span> <i class="fas fa-chevron-right text-[8px]"></i>
+                    <span class="text-blue-500">Novo Cadastro</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-bold tracking-tight text-white">Novo Condomínio</h2>
+                    <span class="text-[11px] bg-slate-800 border border-slate-700 text-slate-400 px-2 py-0.5 rounded-md font-mono">ID: AUTOGEN</span>
+                </div>
+            </div>
+
+            <!-- Ações Globais do Formulário -->
+            <div class="flex items-center gap-2.5">
+                <button type="button" class="px-3.5 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg transition-all flex items-center gap-2">
+                    <i class="fas fa-ban"></i> Cancelar
+                </button>
+                <button type="button" onclick="alert('Iniciando varredura e testes de infraestrutura no condomínio...')" class="px-3.5 py-2 text-xs font-medium bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 rounded-lg transition-all flex items-center gap-2">
+                    <i class="fas fa-network-wired"></i> Testar Conectividade
+                </button>
+                <button type="submit" form="form-condominio" class="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg shadow-blue-600/10 border border-blue-500/30 transition-all flex items-center gap-2">
+                    <i class="fas fa-save"></i> Salvar Infraestrutura
+                </button>
+            </div>
+        </header>
+
+        <!-- SUB-LAYOUT COM ABAS E CONTEÚDO SCROLLABLE -->
+        <div class="flex-1 flex overflow-hidden">
+
+            <!-- NAVEGAÇÃO ENTRE MÓDULOS (Abas Laterais para Alta Eficiência de UX) -->
+            <div class="w-64 bg-[#090d16] border-r border-slate-900 p-3 overflow-y-auto shrink-0 flex flex-col gap-1">
+                <span class="text-[10px] text-slate-600 font-bold uppercase tracking-widest p-2">Módulos de Cadastro</span>
+
+                <button type="button" onclick="switchTab('modulo-gerais', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg bg-blue-600/10 text-white border border-blue-500/30 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-id-card text-blue-500 w-4"></i> 1. Dados Gerais</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-50"></i>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-rede', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-network-wired text-slate-500 w-4"></i> 2. Rede e Internet</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-0 transition-all"></i>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-acesso', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-key text-slate-500 w-4"></i> 3. Acesso Remoto</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-0 transition-all"></i>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-agente', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-server text-slate-500 w-4"></i> 4. Agente Operacional</span>
+                    <span class="h-2 w-2 rounded-full bg-green-500 pulse-green"></span>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-infra', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-boxes-stacked text-slate-500 w-4"></i> 5. Infraestrutura IoT</span>
+                    <span class="text-[10px] px-1.5 py-0.5 bg-slate-800 rounded font-mono text-slate-400">17 Cat</span>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-monitoramento', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-heartbeat text-slate-500 w-4"></i> 6. MonitoramentoAtivo</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-0 transition-all"></i>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-automacao', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-bolt text-slate-500 w-4"></i> 7. Alertas e Automações</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-0 transition-all"></i>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-contatos', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-address-book text-slate-500 w-4"></i> 8. Contatos Técnicos</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-0 transition-all"></i>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-mapa', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-map-location-dot text-slate-500 w-4"></i> 9. Geolocalização</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-0 transition-all"></i>
+                </button>
+
+                <button type="button" onclick="switchTab('modulo-notas', this)" class="tab-btn w-full flex items-center justify-between p-2.5 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 transition-all">
+                    <span class="flex items-center gap-2.5"><i class="fas fa-file-lines text-slate-500 w-4"></i> 10. Notas Operacionais</span>
+                    <i class="fas fa-chevron-right text-[10px] opacity-0 transition-all"></i>
+                </button>
+            </div>
+
+            <!-- FORMULÁRIO DINÂMICO CONTEÚDO (Módulos) -->
+            <main class="flex-1 p-6 overflow-y-auto bg-[#0a0e1a]">
+                <form id="form-condominio" class="max-w-5xl mx-auto space-y-6">
+
+                    <!-- SEÇÃO 1 — DADOS GERAIS -->
+                    <div id="modulo-gerais" class="tab-content block space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-blue-500/10 text-blue-500 rounded-lg border border-blue-500/20"><i class="fas fa-id-card text-md"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-white tracking-wide">1. Dados Gerais e Administrativos</h3>
+                                        <p class="text-[11px] text-slate-400">Identificação básica e prioridades do ativo</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Upload / Logo / Cor -->
+                                <div class="md:col-span-1 flex flex-col gap-4 items-center justify-center p-4 border border-dashed border-slate-800 rounded-xl bg-slate-900/30">
+                                    <div class="w-24 h-24 rounded-xl border border-slate-700 bg-slate-900 flex flex-col items-center justify-center text-slate-500 relative cursor-pointer hover:border-blue-500 group transition-all">
+                                        <i class="fas fa-cloud-arrow-up text-xl mb-1 group-hover:text-blue-400"></i>
+                                        <span class="text-[10px] font-medium uppercase group-hover:text-slate-300">Upload Logo</span>
+                                    </div>
+                                    <div class="w-full">
+                                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Cor Identidade Visual</label>
+                                        <div class="flex gap-2">
+                                            <input type="color" value="#3b82f6" class="w-10 h-8 rounded bg-slate-900 border border-slate-700 cursor-pointer p-0.5">
+                                            <input type="text" value="#3b82f6" class="flex-1 bg-slate-900 border border-slate-800 rounded px-2.5 py-1 text-xs font-mono text-slate-300 focus:outline-none focus:border-slate-700">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Inputs de Texto -->
+                                <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Nome do Condomínio *</label>
+                                        <input type="text" placeholder="Ex: Residencial Vista Verde" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-medium">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Razão Social</label>
+                                        <input type="text" placeholder="Ex: Cond. Edificio Vista Verde" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">CNPJ *</label>
+                                        <input type="text" placeholder="00.000.000/0001-00" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Código Interno NOC</label>
+                                        <input type="text" placeholder="NOC-CC-0042" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 focus:outline-none font-mono bg-slate-900/50" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <div class="sm:col-span-2">
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Endereço Completo</label>
+                                    <input type="text" placeholder="Av. Principal, 1500" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Cidade</label>
+                                    <input type="text" value="Campinas" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Estado</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                        <option value="SP">São Paulo (SP)</option>
+                                        <option value="RJ">Rio de Janeiro (RJ)</option>
+                                        <option value="MG">Minas Gerais (MG)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">CEP</label>
+                                    <input type="text" placeholder="13000-000" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Status Operacional</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-emerald-400 focus:outline-none focus:border-blue-500 font-semibold">
+                                        <option value="ativo" class="text-emerald-400">Ativo / Monitorado</option>
+                                        <option value="implantacao" class="text-amber-400">Em Implantação</option>
+                                        <option value="suspenso" class="text-rose-400">Suspenso / Manutenção</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">SLA / Prioridade Operacional</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                        <option value="critico">CRÍTICO (SLA 2h)</option>
+                                        <option value="alto" selected>ALTO (SLA 4h)</option>
+                                        <option value="medio">MÉDIO (SLA 12h)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 2 — REDE E INTERNET -->
+                    <div id="modulo-rede" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg border border-emerald-500/20"><i class="fas fa-network-wired text-md"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-white tracking-wide">2. Rede e Links de Internet</h3>
+                                        <p class="text-[11px] text-slate-400">Configurações de topologia de borda e conectividade externa</p>
+                                    </div>
+                                </div>
+                                <!-- Indicador Visual de Conectividade Mockada -->
+                                <div class="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
+                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                                    <span class="text-[10px] font-mono text-emerald-400 uppercase tracking-wider font-semibold">Gateway Link OK</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">IP Público Fixo</label>
+                                    <input type="text" placeholder="177.85.23.104" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">IP Principal LAN</label>
+                                    <input type="text" placeholder="192.168.10.1" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Máscara de Sub-rede</label>
+                                    <input type="text" placeholder="255.255.255.0" value="255.255.255.0" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 focus:outline-none font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Gateway de Rede</label>
+                                    <input type="text" placeholder="192.168.10.254" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">DNS Primário / Secundário</label>
+                                    <input type="text" placeholder="1.1.1.1, 8.8.8.8" value="1.1.1.1" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Operadora Principal</label>
+                                    <input type="text" placeholder="Ex: Vivo Fibra Empresas" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Velocidade do Link</label>
+                                    <input type="text" placeholder="Ex: 500 Mbps Simétrico" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-900/40 p-4 rounded-xl border border-slate-800/60">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Link de Backup / Contingência</label>
+                                    <input type="text" placeholder="Ex: Claro Coaxial ou 4G/5G" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Tipo de Conexão</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                        <option value="pppoe">PPPoE</option>
+                                        <option value="dhcp">IP Dinâmico / DHCP</option>
+                                        <option value="estatico" selected>IP Estático</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Configuração Load Balance</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                        <option value="failover" selected>Failover Automático (100% Recuo)</option>
+                                        <option value="balanceado">Distribuição Simétrica (50/50)</option>
+                                        <option value="desativado">Sem link de backup</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Ações Rápidas de Diagnóstico de Rede -->
+                            <div class="flex items-center gap-3 pt-2">
+                                <button type="button" onclick="alert('Enviando pacotes ICMP para o IP informado... Latência média mockada: 12ms')" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded transition-all">
+                                    <i class="fas fa-terminal text-[10px] text-emerald-400 mr-2"></i> Testar Ping
+                                </button>
+                                <button type="button" onclick="alert('Traçando rota de rede até o gateway... 4 saltos até o destino.')" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded transition-all">
+                                    <i class="fas fa-route text-[10px] text-blue-400 mr-2"></i> Testar MTR / Rota
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 3 — ACESSO REMOTO -->
+                    <div id="modulo-acesso" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-amber-500/10 text-amber-500 rounded-lg border border-amber-500/20"><i class="fas fa-key text-md"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-white tracking-wide">3. Protocolos de Acesso Remoto</h3>
+                                        <p class="text-[11px] text-slate-400">Credenciais criptografadas para engenharia de campo e túneis VPN</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">SSH Habilitado</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                        <option value="sim" selected>Sim (Recomendado)</option>
+                                        <option value="nao">Não</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Porta SSH</label>
+                                    <input type="number" value="22" placeholder="22" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Usuário SSH</label>
+                                    <input type="text" value="noc_admin" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Senha / Chave RSA Key</label>
+                                    <input type="password" value="••••••••••••••••" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">URL Interface Web Interna</label>
+                                    <input type="url" placeholder="https://condominio.secticom.com.br:8443" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Perfil de VPN Associado</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                        <option value="wireguard">WireGuard NOC-Sp</option>
+                                        <option value="openvpn" selected>OpenVPN Server Principal</option>
+                                        <option value="none">Sem VPN (Acesso Direto)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Token API do Integrador</label>
+                                    <input type="text" placeholder="cc_tok_84j82ks92l..." class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 pt-2">
+                                <button type="button" onclick="alert('Handshake SSH bem sucedido. Servidor remoto online.')" class="px-3 py-1.5 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 rounded transition-all">
+                                    <i class="fas fa-handshake mr-1.5"></i> Testar SSH
+                                </button>
+                                <button type="button" onclick="alert('Carregando emulação xterm.js...')" class="px-3 py-1.5 text-xs bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 rounded transition-all">
+                                    <i class="fas fa-terminal text-slate-400 mr-1.5"></i> Abrir Terminal Integrado
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 4 — AGENTE DE MONITORAMENTO -->
+                    <div id="modulo-agente" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg border border-indigo-500/20"><i class="fas fa-server text-md"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-white tracking-wide">4. Agente de Monitoramento Local (Secticom Daemon)</h3>
+                                        <p class="text-[11px] text-slate-400">Status do script/serviço rodando no servidor de borda do condomínio</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Agente Instalado</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                        <option value="sim" selected>Sim (Linux x86_64)</option>
+                                        <option value="docker">Sim (Container Docker)</option>
+                                        <option value="nao">Não Instalado</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Hostname do Agente</label>
+                                    <input type="text" value="cc-agent-vistaverde" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 font-mono" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Versão do Binário</label>
+                                    <span class="w-full block bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 font-mono">v2.4.1-stable</span>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Intervalo de Heartbeat</label>
+                                    <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                                        <option value="10">10 Segundos (NOC Realtime)</option>
+                                        <option value="30" selected>30 Segundos (Padrão)</option>
+                                        <option value="60">60 Segundos</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Gráfico Simples Mockado (Grafana/Datadog Vibe) -->
+                            <div class="bg-[#0b0f19] border border-slate-800 p-4 rounded-xl space-y-3">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider"><i class="fas fa-chart-line text-indigo-400 mr-1"></i> Telemetria de Heartbeat (Últimos 10 min)</span>
+                                    <span class="text-[10px] font-mono text-green-400 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20"><i class="fas fa-bolt mr-1"></i> WebSocket Conectado</span>
+                                </div>
+                                <div class="h-16 flex items-end gap-1 pt-2">
+                                    <!-- Barras de Gráfico Fictícias -->
+                                    <div class="bg-blue-500/40 w-full h-12 rounded-sm hover:bg-blue-500 transition-all" title="Latência: 14ms"></div>
+                                    <div class="bg-blue-500/40 w-full h-11 rounded-sm hover:bg-blue-500 transition-all"></div>
+                                    <div class="bg-blue-500/40 w-full h-10 rounded-sm hover:bg-blue-500 transition-all"></div>
+                                    <div class="bg-blue-500/40 w-full h-14 rounded-sm hover:bg-blue-500 transition-all"></div>
+                                    <div class="bg-blue-500/40 w-full h-12 rounded-sm hover:bg-blue-500 transition-all"></div>
+                                    <div class="bg-rose-500/50 w-full h-6 rounded-sm hover:bg-rose-500 transition-all" title="Timeout de Pacote"></div>
+                                    <div class="bg-blue-500/60 w-full h-14 rounded-sm hover:bg-blue-500 transition-all"></div>
+                                    <div class="bg-blue-500/60 w-full h-13 rounded-sm hover:bg-blue-500 transition-all"></div>
+                                    <div class="bg-blue-500/80 w-full h-12 rounded-sm hover:bg-blue-500 transition-all"></div>
+                                    <div class="bg-blue-500 w-full h-14 rounded-sm"></div>
+                                </div>
+                                <div class="flex justify-between text-[9px] text-slate-500 font-mono">
+                                    <span>10 min atrás</span>
+                                    <span>Agora (Estável)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 5 — INFRAESTRUTURA -->
+                    <div id="modulo-infra" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="border-b border-slate-800 pb-4">
+                                <h3 class="text-sm font-semibold text-white tracking-wide">5. Dimensionamento de Ativos e Infraestrutura</h3>
+                                <p class="text-[11px] text-slate-400">Informe o inventário bruto estimado para volumetria de licenças e dashboards</p>
+                            </div>
+
+                            <!-- GRID DE ATIVOS INTELIGENTE -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                <!-- Item 1: Câmeras -->
+                                <div class="glass-card p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg text-sm"><i class="fas fa-video"></i></div>
+                                        <div>
+                                            <p class="text-[11px] font-medium text-slate-400">Câmeras IP</p>
+                                            <p class="text-[9px] text-slate-500">CFTV Intelbras/Hik</p>
+                                        </div>
+                                    </div>
+                                    <input type="number" value="32" class="w-12 bg-slate-900 border border-slate-800 rounded p-1 text-center text-xs font-mono font-semibold text-white focus:outline-none focus:border-blue-500">
+                                </div>
+
+                                <!-- Item 2: DVR/NVR -->
+                                <div class="glass-card p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="p-2 bg-purple-500/10 text-purple-400 rounded-lg text-sm"><i class="fas fa-hdd"></i></div>
+                                        <div>
+                                            <p class="text-[11px] font-medium text-slate-400">NVRs / Gravadores</p>
+                                            <p class="text-[9px] text-slate-500">Storages Locais</p>
+                                        </div>
+                                    </div>
+                                    <input type="number" value="2" class="w-12 bg-slate-900 border border-slate-800 rounded p-1 text-center text-xs font-mono font-semibold text-white focus:outline-none">
+                                </div>
+
+                                <!-- Item 3: Switches -->
+                                <div class="glass-card p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="p-2 bg-cyan-500/10 text-cyan-400 rounded-lg text-sm"><i class="fas fa-network-wired"></i></div>
+                                        <div>
+                                            <p class="text-[11px] font-medium text-slate-400">Switches PoE</p>
+                                            <p class="text-[9px] text-slate-500">Distribuição / Core</p>
+                                        </div>
+                                    </div>
+                                    <input type="number" value="6" class="w-12 bg-slate-900 border border-slate-800 rounded p-1 text-center text-xs font-mono font-semibold text-white focus:outline-none">
+                                </div>
+
+                                <!-- Item 4: Controladoras Faciais -->
+                                <div class="glass-card p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-sm"><i class="fas fa-user-shield"></i></div>
+                                        <div>
+                                            <p class="text-[11px] font-medium text-slate-400">Leitores Faciais</p>
+                                            <p class="text-[9px] text-slate-500">Controle de Acesso</p>
+                                        </div>
+                                    </div>
+                                    <input type="number" value="4" class="w-12 bg-slate-900 border border-slate-800 rounded p-1 text-center text-xs font-mono font-semibold text-white focus:outline-none">
+                                </div>
+
+                                <!-- Item 5: Interfones CIP -->
+                                <div class="glass-card p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="p-2 bg-amber-500/10 text-amber-400 rounded-lg text-sm"><i class="fas fa-phone-volume"></i></div>
+                                        <div>
+                                            <p class="text-[11px] font-medium text-slate-400">Interfones IP</p>
+                                            <p class="text-[9px] text-slate-500">Sistemas de Voz/SIP</p>
+                                        </div>
+                                    </div>
+                                    <input type="number" value="120" class="w-12 bg-slate-900 border border-slate-800 rounded p-1 text-center text-xs font-mono font-semibold text-white focus:outline-none">
+                                </div>
+
+                                <!-- Item 6: Nobreaks -->
+                                <div class="glass-card p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="p-2 bg-yellow-500/10 text-yellow-400 rounded-lg text-sm"><i class="fas fa-car-battery"></i></div>
+                                        <div>
+                                            <p class="text-[11px] font-medium text-slate-400">Nobreaks / UPS</p>
+                                            <p class="text-[9px] text-slate-500">Autonomia de Rack</p>
+                                        </div>
+                                    </div>
+                                    <input type="number" value="3" class="w-12 bg-slate-900 border border-slate-800 rounded p-1 text-center text-xs font-mono font-semibold text-white focus:outline-none">
+                                </div>
+
+                                <!-- Item 7: Servidores Locais -->
+                                <div class="glass-card p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg text-sm"><i class="fas fa-server"></i></div>
+                                        <div>
+                                            <p class="text-[11px] font-medium text-slate-400">Servidores / PCs</p>
+                                            <p class="text-[9px] text-slate-500">VMS / Portaria Virtual</p>
+                                        </div>
+                                    </div>
+                                    <input type="number" value="1" class="w-12 bg-slate-900 border border-slate-800 rounded p-1 text-center text-xs font-mono font-semibold text-white focus:outline-none">
+                                </div>
+
+                                <!-- Item 8: Sensores IoT -->
+                                <div class="glass-card p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="p-2 bg-rose-500/10 text-rose-400 rounded-lg text-sm"><i class="fas fa-rss"></i></div>
+                                        <div>
+                                            <p class="text-[11px] font-medium text-slate-400">Sensores / Alarmes</p>
+                                            <p class="text-[9px] text-slate-500">Perímetro e Incêndio</p>
+                                        </div>
+                                    </div>
+                                    <input type="number" value="18" class="w-12 bg-slate-900 border border-slate-800 rounded p-1 text-center text-xs font-mono font-semibold text-white focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 6 — MONITORAMENTO -->
+                    <div id="modulo-monitoramento" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="border-b border-slate-800 pb-4">
+                                <h3 class="text-sm font-semibold text-white tracking-wide">6. Políticas de Monitoramento Ativo</h3>
+                                <p class="text-[11px] text-slate-400">Defina quais camadas de protocolo serão checadas de forma contínua pelo NOC</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="space-y-4">
+                                    <!-- Toggle 1 -->
+                                    <div class="flex items-center justify-between p-3 bg-slate-900/40 rounded-lg border border-slate-800">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-arrow-down-up-lock text-slate-500 text-sm w-5 text-center"></i>
+                                            <div>
+                                                <p class="text-xs font-medium text-slate-200">Monitorar Ping (ICMP)</p>
+                                                <p class="text-[10px] text-slate-500">Alerta de host offline imediato</p>
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" checked class="w-9 h-5 bg-slate-700 checked:bg-blue-500 rounded-full cursor-pointer appearance-none relative before:content-[''] before:absolute before:h-4 before:w-4 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 checked:before:translate-x-4 before:transition-all">
+                                    </div>
+
+                                    <!-- Toggle 2 -->
+                                    <div class="flex items-center justify-between p-3 bg-slate-900/40 rounded-lg border border-slate-800">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-barcode text-slate-500 text-sm w-5 text-center"></i>
+                                            <div>
+                                                <p class="text-xs font-medium text-slate-200">Coleta de Métricas SNMP</p>
+                                                <p class="text-[10px] text-slate-500">Uso de CPU, memória e banda de switches</p>
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" checked class="w-9 h-5 bg-slate-700 checked:bg-blue-500 rounded-full cursor-pointer appearance-none relative before:content-[''] before:absolute before:h-4 before:w-4 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 checked:before:translate-x-4 before:transition-all">
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <!-- Toggle 3 -->
+                                    <div class="flex items-center justify-between p-3 bg-slate-900/40 rounded-lg border border-slate-800">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-code text-slate-500 text-sm w-5 text-center"></i>
+                                            <div>
+                                                <p class="text-xs font-medium text-slate-200">Verificação de Endpoints API / HTTP</p>
+                                                <p class="text-[10px] text-slate-500">Valida se interfaces web de portaria estão respondendo</p>
+                                            </div>
+                                        </div>
+                                        <input type="checkbox" class="w-9 h-5 bg-slate-700 checked:bg-blue-500 rounded-full cursor-pointer appearance-none relative before:content-[''] before:absolute before:h-4 before:w-4 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 checked:before:translate-x-4 before:transition-all">
+                                    </div>
+
+                                    <!-- Frequency Selection -->
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Frequência da Varredura (Poller)</label>
+                                        <select class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none">
+                                            <option value="1">A cada 1 minuto</option>
+                                            <option value="5" selected>A cada 5 minutos (Recomendado)</option>
+                                            <option value="15">A cada 15 minutos</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 7 — ALERTAS E AUTOMAÇÕES -->
+                    <div id="modulo-automacao" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="border-b border-slate-800 pb-4">
+                                <h3 class="text-sm font-semibold text-white tracking-wide">7. Incidentes, Alertas e Playbooks Automáticos</h3>
+                                <p class="text-[11px] text-slate-400">Regras de auto-correção e canais de notificação emergencial</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="p-4 bg-slate-900/40 rounded-xl border border-slate-800 space-y-3">
+                                    <p class="text-xs font-semibold text-slate-300"><i class="fab fa-whatsapp text-emerald-400 mr-1.5"></i> Transmissão de Notificações</p>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center gap-2 text-xs text-slate-400"><input type="checkbox" checked class="rounded border-slate-800 bg-slate-900 text-blue-500"> Enviar para Grupo de WhatsApp</label>
+                                        <label class="flex items-center gap-2 text-xs text-slate-400"><input type="checkbox" checked class="rounded border-slate-800 bg-slate-900 text-blue-500"> Alerta via Canal Telegram</label>
+                                        <label class="flex items-center gap-2 text-xs text-slate-400"><input type="checkbox" class="rounded border-slate-800 bg-slate-900 text-blue-500"> Abertura de Ticket e-mail</label>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-slate-900/40 rounded-xl border border-slate-800 space-y-3 sm:col-span-2">
+                                    <p class="text-xs font-semibold text-slate-300"><i class="fas fa-robot text-blue-400 mr-1.5"></i> Playbook de Auto-Heal (Mitigação de Falhas)</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <label class="flex items-center gap-2 text-xs text-slate-400">
+                                            <input type="checkbox" checked class="rounded border-slate-800 bg-slate-900 text-blue-500"> Reiniciar Serviço de Câmeras se cair
+                                        </label>
+                                        <label class="flex items-center gap-2 text-xs text-slate-400">
+                                            <input type="checkbox" class="rounded border-slate-800 bg-slate-900 text-blue-500"> Forçar Reboot Agendado Semanal (Domingo 03h)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 8 — CONTATOS -->
+                    <div id="modulo-contatos" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="border-b border-slate-800 pb-4">
+                                <h3 class="text-sm font-semibold text-white tracking-wide">8. Matriz de Contatos Técnicos e Administrativos</h3>
+                                <p class="text-[11px] text-slate-400">Quem acionar em caso de sinistros, falhas de infraestrutura ou falta de energia</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl space-y-3">
+                                    <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-bold uppercase">Gestor Master</span>
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-slate-500 uppercase">Nome do Síndico(a)</label>
+                                        <input type="text" placeholder="Ex: Carlos Alberto" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-slate-500 uppercase">Telefone / WhatsApp</label>
+                                        <input type="text" placeholder="(19) 99999-0000" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200">
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl space-y-3">
+                                    <span class="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded font-bold uppercase">Técnico Local</span>
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-slate-500 uppercase">Integrador Responsável</label>
+                                        <input type="text" placeholder="Ex: Silva Segurança Eletrônica" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-slate-500 uppercase">E-mail de Suporte</label>
+                                        <input type="email" placeholder="suporte@silvaseg.com" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200">
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl space-y-3">
+                                    <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded font-bold uppercase">Administração</span>
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-slate-500 uppercase">Nome Administradora</label>
+                                        <input type="text" placeholder="Ex: Lello Condomínios" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-semibold text-slate-500 uppercase">Telefone Plantão</label>
+                                        <input type="text" placeholder="0800-XXX-XXXX" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 text-xs text-slate-200">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 9 — MAPA E LOCALIZAÇÃO -->
+                    <div id="modulo-mapa" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="border-b border-slate-800 pb-4">
+                                <h3 class="text-sm font-semibold text-white tracking-wide">9. Geolocalização e Coordenadas Geográficas</h3>
+                                <p class="text-[11px] text-slate-400">Usado para posicionar o condomínio no mapa geral de monitoramento do NOC</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Latitude</label>
+                                    <input type="text" placeholder="-22.9064" value="-22.9064" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Longitude</label>
+                                    <input type="text" placeholder="-47.0616" value="-47.0616" class="w-full bg-[#111625] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none font-mono">
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="button" onclick="alert('Buscando coordenadas baseadas no endereço da Seção 1...')" class="w-full px-3 py-2 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg font-medium transition-all">
+                                        <i class="fas fa-location-crosshairs text-blue-400 mr-1.5"></i> Auto-Detectar por Endereço
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Simulação de Mini-Mapa Estilizado Dark Mode -->
+                            <div class="h-48 rounded-xl bg-[#090d16] border border-slate-800 relative overflow-hidden flex items-center justify-center text-center">
+                                <!-- Estética de grid de mapa de monitoramento -->
+                                <div class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+                                <div class="relative z-10 space-y-1.5">
+                                    <div class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500 flex items-center justify-center text-blue-400 mx-auto animate-bounce">
+                                        <i class="fas fa-location-dot"></i>
+                                    </div>
+                                    <p class="text-xs text-slate-400 font-medium font-mono">Campinas, SP (Centro de Monitoramento)</p>
+                                    <p class="text-[9px] text-slate-600 font-mono uppercase tracking-widest">Mock OpenStreetMap / Google Maps Dark API</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 10 — OBSERVAÇÕES TÉCNICAS -->
+                    <div id="modulo-notas" class="tab-content hidden space-y-6">
+                        <div class="glass-panel p-6 rounded-xl space-y-6">
+                            <div class="border-b border-slate-800 pb-4">
+                                <h3 class="text-sm font-semibold text-white tracking-wide">10. Prontuário e Histórico de Notas Técnicas</h3>
+                                <p class="text-[11px] text-slate-400">Descreva problemas crônicos conhecidos da infraestrutura ou observações cruciais</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Notas Operacionais do Ativo</label>
+                                <textarea rows="6" placeholder="Ex: Condomínio apresenta quedas frequentes de energia na região periférica da cerca. Nobreak do Rack 2 necessita de troca de bateria no próximo trimestre. O switch da guarita responde apenas em 100Mbps..." class="w-full bg-[#111625] border border-slate-800 rounded-lg p-3 text-xs text-slate-300 focus:outline-none focus:border-blue-500 leading-relaxed"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <!-- LOGICA DAS ABAS E INTERATIVIDADE UX FRONTEND -->
+    <script>
+        function switchTab(targetId, buttonElement) {
+            // Esconder todos os blocos de conteúdo das seções
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('block');
+                content.classList.add('hidden');
+            });
+
+            // Mostrar o bloco selecionado
+            document.getElementById(targetId).classList.remove('hidden');
+            document.getElementById(targetId).classList.add('block');
+
+            // Resetar o estilo visual de todos os botões de abas na barra lateral
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-blue-600/10', 'text-white', 'border-blue-500/30');
+                btn.classList.add('text-slate-400', 'hover:bg-slate-800/30', 'hover:text-slate-200');
+
+                // Tratar a setinha indicadora
+                const icon = btn.querySelector('.fa-chevron-right');
+                if (icon) icon.classList.add('opacity-0');
+            });
+
+            // Aplicar o estilo ativo de sistema enterprise no botão selecionado
+            buttonElement.classList.remove('text-slate-400', 'hover:bg-slate-800/30', 'hover:text-slate-200');
+            buttonElement.classList.add('bg-blue-600/10', 'text-white', 'border-blue-500/30');
+
+            const currentIcon = buttonElement.querySelector('.fa-chevron-right');
+            if (currentIcon) currentIcon.classList.remove('opacity-0');
+        }
+    </script>
 </body>
 </html>

@@ -5,7 +5,6 @@ from db import close_db, init_db
 from routes.auth import auth_bp
 from routes.admin import admin_bp
 from routes.agent import agent_bp
-from routes.stream import stream_bp
 from routes.main import main_bp
 
 
@@ -23,7 +22,6 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(agent_bp)
-    app.register_blueprint(stream_bp)
     app.register_blueprint(main_bp)
 
     # ==============================
@@ -45,4 +43,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

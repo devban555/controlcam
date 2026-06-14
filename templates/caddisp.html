@@ -1,10 +1,309 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" class="h-full bg-gray-950 antialiased selection:bg-blue-500/30 selection:text-blue-200">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ControlCam | Cadastro de Dispositivos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-$END$
+<body class="h-full text-gray-100 flex flex-col font-sans">
+
+    <!-- Topbar / Header -->
+    <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800/60 sticky top-0 z-50 px-6 py-4 flex items-center justify-between shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 p-2 rounded-lg text-white font-bold tracking-wider text-sm shadow-lg shadow-blue-500/20 flex items-center justify-center h-9 w-9">
+                CC
+            </div>
+            <div>
+                <h1 class="text-base font-bold tracking-tight text-gray-100 leading-none mb-1">ControlCam</h1>
+                <p class="text-xs text-gray-400">Security Systems & Infrastructure</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="flex items-center space-x-2 bg-gray-800/60 px-3 py-1.5 rounded-full text-xs font-medium text-emerald-400 border border-emerald-500/20">
+                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Sistema Online</span>
+            </span>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Coluna da Esquerda (Formulário + Protocolos) -->
+        <div class="lg:col-span-1 space-y-6 lg:sticky lg:top-24 h-fit">
+
+            <!-- Formulário de Cadastro -->
+            <section class="bg-gray-900 border border-gray-800/80 rounded-xl p-5 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="border-b border-gray-800 pb-4 mb-5">
+                        <h2 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
+                            Novo Dispositivo
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1">Adicione ativos à topologia do cliente</p>
+                    </div>
+
+                    <form id="deviceForm" class="space-y-4">
+                        <!-- Nome do Dispositivo -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5" for="dev-name">Nome / Identificação</label>
+                            <input type="text" id="dev-name" placeholder="Ex: CAM-EXT-01, SW-PRINCIPAL" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-650 focus:outline-none focus:border-blue-500 focus:bg-gray-900/50 focus:ring-4 focus:ring-blue-500/10 transition-all" required>
+                        </div>
+
+                        <!-- Grupo / Categoria de Dispositivos -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5" for="dev-group">Grupo do Ativo</label>
+                            <select id="dev-group" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 focus:bg-gray-900/50 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer" required>
+                                <option value="" disabled selected class="text-gray-500">Selecione o grupo...</option>
+                                <option value="cameras">Câmeras (CFTV)</option>
+                                <option value="faciais">Controle de Acesso / Faciais</option>
+                                <option value="switches">Switches</option>
+                                <option value="roteadores">Roteadores / Gateways</option>
+                                <option value="gravadores">Gravadores (NVR / DVR)</option>
+                                <option value="outros">Outros Dispositivos</option>
+                            </select>
+                        </div>
+
+                        <!-- Endereço IP -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5" for="dev-ip">Endereço IP</label>
+                            <input type="text" id="dev-ip" placeholder="Ex: 192.168.1.50" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm font-mono text-gray-100 placeholder-gray-650 focus:outline-none focus:border-blue-500 focus:bg-gray-900/50 focus:ring-4 focus:ring-blue-500/10 transition-all" required>
+                        </div>
+
+                        <!-- Marca / Modelo -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5" for="dev-model">Marca / Modelo</label>
+                            <input type="text" id="dev-model" placeholder="Ex: Intelbras VIP 3230, Hikvision" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-650 focus:outline-none focus:border-blue-500 focus:bg-gray-900/50 focus:ring-4 focus:ring-blue-500/10 transition-all">
+                        </div>
+
+                        <!-- Status Inicial -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5" for="dev-status">Status de Ativação</label>
+                            <select id="dev-status" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 focus:bg-gray-900/50 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer">
+                                <option value="online">Online / Ativo</option>
+                                <option value="offline">Offline / Manutenção</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="pt-4 border-t border-gray-800 mt-6">
+                    <button type="submit" form="deviceForm" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2.5 px-4 rounded-lg shadow-lg shadow-blue-600/10 hover:shadow-blue-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 font-semibold">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>
+                        Adicionar Dispositivo
+                    </button>
+                </div>
+            </section>
+
+            <!-- Box Lateral: Protocolos de Varredura -->
+            <section class="bg-gray-900 border border-gray-800/80 rounded-xl p-5 shadow-xl">
+                <div class="border-b border-gray-800 pb-3 mb-4">
+                    <h2 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"></path></svg>
+                        Protocolos do Sistema
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-1">Funções de diagnóstico automático</p>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-gray-800/50">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-gray-950/60 text-[10px] text-gray-400 uppercase tracking-wider border-b border-gray-800/40">
+                            <tr>
+                                <th class="px-3 py-2 font-semibold">Protocolo</th>
+                                <th class="px-3 py-2 font-semibold">Função</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-850/60 bg-gray-950/20">
+                            <tr>
+                                <td class="px-3 py-2 font-bold font-mono text-blue-400">HTTP</td>
+                                <td class="px-3 py-2 text-gray-400">detectar interface web</td>
+                            </tr>
+                            <tr>
+                                <td class="px-3 py-2 font-bold font-mono text-purple-400">HTTPS</td>
+                                <td class="px-3 py-2 text-gray-400">detectar interface segura</td>
+                            </tr>
+                            <tr>
+                                <td class="px-3 py-2 font-bold font-mono text-emerald-400">RTSP</td>
+                                <td class="px-3 py-2 text-gray-400">detectar stream câmera</td>
+                            </tr>
+                            <tr>
+                                <td class="px-3 py-2 font-bold font-mono text-amber-400">ONVIF</td>
+                                <td class="px-3 py-2 text-gray-400">identificar câmeras/faciais</td>
+                            </tr>
+                            <tr>
+                                <td class="px-3 py-2 font-bold font-mono text-cyan-400">SSH</td>
+                                <td class="px-3 py-2 text-gray-400">acesso Linux/network</td>
+                            </tr>
+                            <tr>
+                                <td class="px-3 py-2 font-bold font-mono text-rose-400">SNMP</td>
+                                <td class="px-3 py-2 text-gray-400">monitoramento ativos rede</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- Visualização e Listagem por Grupos (Coluna da Direita / Ocupa 2/3) -->
+        <section class="lg:col-span-2 space-y-6">
+
+            <!-- Grupo: Câmeras -->
+            <div class="bg-gray-900 border border-gray-800/80 rounded-xl shadow-xl overflow-hidden">
+                <div class="bg-gray-950/40 px-5 py-4 border-b border-gray-800/60 flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="p-2 bg-blue-500/10 rounded-lg text-blue-400 border border-blue-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"></path></svg>
+                        </span>
+                        <h3 class="text-sm font-semibold tracking-wide text-gray-200">Câmeras (CFTV)</h3>
+                    </div>
+                    <span class="text-[11px] bg-gray-800 text-gray-400 px-2.5 py-1 rounded-md font-mono font-medium">2 ativos</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-950/60 text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-800/40">
+                            <tr>
+                                <th class="px-5 py-3 font-semibold">Nome</th>
+                                <th class="px-5 py-3 font-semibold">IP</th>
+                                <th class="px-5 py-3 font-semibold">Modelo</th>
+                                <th class="px-5 py-3 font-semibold">Status</th>
+                                <th class="px-5 py-3 text-right font-semibold">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-850/60">
+                            <tr>
+                                <td class="px-5 py-3.5 font-medium text-gray-200">CAM-EXT-ENTRADA</td>
+                                <td class="px-5 py-3.5 font-mono text-xs text-gray-400">192.168.10.51</td>
+                                <td class="px-5 py-3.5 text-gray-400 text-xs">Intelbras VIP 3230 B</td>
+                                <td class="px-5 py-3.5">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/10">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Online
+                                    </span>
+                                </td>
+                                <td class="px-5 py-3.5 text-right">
+                                    <button class="text-xs text-gray-400 hover:text-red-400 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-all">Remover</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3.5 font-medium text-gray-200">CAM-INT-RECEPCAO</td>
+                                <td class="px-5 py-3.5 font-mono text-xs text-gray-400">192.168.10.52</td>
+                                <td class="px-5 py-3.5 text-gray-400 text-xs">Hikvision DS-2CD1023G0-E</td>
+                                <td class="px-5 py-3.5">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/10">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Online
+                                    </span>
+                                </td>
+                                <td class="px-5 py-3.5 text-right">
+                                    <button class="text-xs text-gray-400 hover:text-red-400 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-all">Remover</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Grupo: Controle de Acesso / Faciais -->
+            <div class="bg-gray-900 border border-gray-800/80 rounded-xl shadow-xl overflow-hidden">
+                <div class="bg-gray-950/40 px-5 py-4 border-b border-gray-800/60 flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="p-2 bg-purple-500/10 rounded-lg text-purple-400 border border-purple-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.956 11.956 0 0112 2.714z"></path></svg>
+                        </span>
+                        <h3 class="text-sm font-semibold tracking-wide text-gray-200">Faciais / Controle de Acesso</h3>
+                    </div>
+                    <span class="text-[11px] bg-gray-800 text-gray-400 px-2.5 py-1 rounded-md font-mono font-medium">1 ativo</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-950/60 text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-800/40">
+                            <tr>
+                                <th class="px-5 py-3 font-semibold">Nome</th>
+                                <th class="px-5 py-3 font-semibold">IP</th>
+                                <th class="px-5 py-3 font-semibold">Modelo</th>
+                                <th class="px-5 py-3 font-semibold">Status</th>
+                                <th class="px-5 py-3 text-right font-semibold">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-850/60">
+                            <tr>
+                                <td class="px-5 py-3.5 font-medium text-gray-200">FACIAL-PORTARIA-01</td>
+                                <td class="px-5 py-3.5 font-mono text-xs text-gray-400">192.168.10.100</td>
+                                <td class="px-5 py-3.5 text-gray-400 text-xs">Intelbras SS 3530 MF W</td>
+                                <td class="px-5 py-3.5">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/10">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>Offline
+                                    </span>
+                                </td>
+                                <td class="px-5 py-3.5 text-right">
+                                    <button class="text-xs text-gray-400 hover:text-red-400 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-all">Remover</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Grupo: Switches & Roteadores -->
+            <div class="bg-gray-900 border border-gray-800/80 rounded-xl shadow-xl overflow-hidden">
+                <div class="bg-gray-950/40 px-5 py-4 border-b border-gray-800/60 flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="p-2 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a3 3 0 013-3v0m13.5 0a3 3 0 013 3v0M6.75 6.75h.75m-.75 3h.75m3-3h.75m-.75 3h.75m3-3h.75m-.75 3h.75M6.75 16.5h.75m-.75 3h.75m3-3h.75m-.75 3h.75m3-3h.75m-.75 3h.75"></path></svg>
+                        </span>
+                        <h3 class="text-sm font-semibold tracking-wide text-gray-200">Ativos de Rede (Switches / Roteadores)</h3>
+                    </div>
+                    <span class="text-[11px] bg-gray-800 text-gray-400 px-2.5 py-1 rounded-md font-mono font-medium">1 ativo</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-950/60 text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-800/40">
+                            <tr>
+                                <th class="px-5 py-3 font-semibold">Nome</th>
+                                <th class="px-5 py-3 font-semibold">IP</th>
+                                <th class="px-5 py-3 font-semibold">Modelo</th>
+                                <th class="px-5 py-3 font-semibold">Status</th>
+                                <th class="px-5 py-3 text-right font-semibold">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-850/60">
+                            <tr>
+                                <td class="px-5 py-3.5 font-medium text-gray-200">SW-CORE-TI</td>
+                                <td class="px-5 py-3.5 font-mono text-xs text-gray-400">192.168.10.10</td>
+                                <td class="px-5 py-3.5 text-gray-400 text-xs">Intelbras SG 2404 MR</td>
+                                <td class="px-5 py-3.5">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/10">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Online
+                                    </span>
+                                </td>
+                                <td class="px-5 py-3.5 text-right">
+                                    <button class="text-xs text-gray-400 hover:text-red-400 hover:bg-red-500/10 px-2.5 py-1 rounded-md transition-all">Remover</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 text-center py-5 border-t border-gray-900 text-xs text-gray-500 font-medium">
+        &copy; 2026 ControlCam. Gerenciamento de Infraestrutura de Segurança Eletrônica.
+    </footer>
+
 </body>
 </html>

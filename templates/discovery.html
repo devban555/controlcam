@@ -1,10 +1,837 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
 
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-gray-950 antialiased">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ControlCam | Discovery & Inventory Center</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <script>
+
+        tailwind.config = {
+
+            theme: {
+
+                extend: {
+
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+
+                    colors: {
+                        gray: {
+                            850: '#1f242e',
+                            950: '#090d16'
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
+</head>
+
+<body class="h-full bg-gray-950 text-gray-100 font-sans overflow-hidden">
+
+<div class="h-full flex flex-col">
+
+    <header
+        class="
+            h-20
+            shrink-0
+            bg-gray-900/90
+            backdrop-blur-md
+            border-b
+            border-gray-800
+            px-6
+            flex
+            items-center
+            justify-between
+            shadow-xl
+            z-50
+        "
+    >
+
+        <div class="flex items-center gap-4">
+
+            <div
+                class="
+                    w-11
+                    h-11
+                    rounded-xl
+                    bg-blue-600
+                    flex
+                    items-center
+                    justify-center
+                    font-bold
+                    shadow-lg
+                    shadow-blue-500/20
+                "
+            >
+                CC
+            </div>
+
+            <div>
+
+                <h1 class="text-lg font-bold tracking-tight">
+                    {{ nome_empresa }}
+                </h1>
+
+                <p class="text-xs text-gray-400 mt-0.5">
+                    {{ nome_empresa }} • Discovery • Inventário • Infraestrutura
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="flex items-center gap-3">
+
+            <div
+                class="
+                    bg-gray-800/80
+                    border
+                    border-gray-700
+                    rounded-xl
+                    px-4
+                    py-2
+                    flex
+                    items-center
+                    gap-3
+                "
+            >
+
+                {% if agente_status == "ON" %}
+
+                <div
+                    class="
+                        w-2
+                        h-2
+                        rounded-full
+                        bg-emerald-500
+                        animate-pulse
+                    "
+                ></div>
+
+                {% else %}
+
+                <div
+                    class="
+                        w-2
+                        h-2
+                        rounded-full
+                        bg-rose-500
+                    "
+                ></div>
+
+                {% endif %}
+
+                <div>
+
+                    <div class="text-[11px] uppercase tracking-wider text-gray-500">
+                        Agent
+                    </div>
+
+                    {% if agente_status == "ON" %}
+
+                    <div class="text-xs font-semibold text-emerald-400">
+                        ONLINE
+                    </div>
+
+                    {% else %}
+
+                    <div class="text-xs font-semibold text-rose-400">
+                        OFFLINE
+                    </div>
+
+                    {% endif %}
+
+                    {% if ultimo_heartbeat %}
+
+                    <div class="text-[10px] text-gray-500 mt-0.5">
+                        {{ ultimo_heartbeat }}
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div
+                class="
+                    bg-gray-800/80
+                    border
+                    border-gray-700
+                    rounded-xl
+                    px-4
+                    py-2
+                "
+            >
+
+                <div class="text-[11px] uppercase tracking-wider text-gray-500">
+                    Range
+                </div>
+
+                <div class="text-xs font-mono text-blue-400">
+                    172.16.0.0/24
+                </div>
+
+            </div>
+
+        </div>
+
+    </header>
+
+    <main class="flex-1 overflow-hidden">
+
+        <div class="grid grid-cols-12 h-full">
+
+            <aside
+                class="
+                    col-span-2
+                    bg-gray-900
+                    border-r
+                    border-gray-800
+                    overflow-y-auto
+                    p-5
+                    space-y-5
+                "
+            >
+
+                <section
+                    class="
+                        bg-gray-950
+                        border
+                        border-gray-800
+                        rounded-2xl
+                        p-5
+                    "
+                >
+
+                    <div class="flex items-center justify-between mb-4">
+
+                        <h2 class="text-sm font-semibold">
+                            Discovery
+                        </h2>
+
+                        <span
+                            class="
+                                text-[11px]
+                                bg-emerald-500/10
+                                text-emerald-400
+                                border
+                                border-emerald-500/20
+                                px-2
+                                py-1
+                                rounded-md
+                            "
+                        >
+                            ativo
+                        </span>
+
+                    </div>
+
+                    <div class="space-y-3 text-sm">
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Dispositivos</span>
+                            <span class="font-bold">12</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">RTSP</span>
+                            <span class="font-bold text-purple-400">5</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">HTTP</span>
+                            <span class="font-bold text-blue-400">4</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">SSH</span>
+                            <span class="font-bold text-cyan-400">1</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">SNMP</span>
+                            <span class="font-bold text-amber-400">1</span>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <section
+                    class="
+                        bg-gray-950
+                        border
+                        border-gray-800
+                        rounded-2xl
+                        p-5
+                    "
+                >
+
+                    <h2 class="text-sm font-semibold mb-4">
+                        Filtros
+                    </h2>
+
+                    <div class="space-y-2">
+
+                        <button type="button" class="filter-btn">
+                            Todos
+                        </button>
+
+                        <button type="button" class="filter-btn-purple">
+                            RTSP
+                        </button>
+
+                        <button type="button" class="filter-btn-blue">
+                            HTTP
+                        </button>
+
+                        <button type="button" class="filter-btn-cyan">
+                            SSH
+                        </button>
+
+                        <button type="button" class="filter-btn-amber">
+                            SNMP
+                        </button>
+
+                    </div>
+
+                </section>
+
+            </aside>
+
+            <section
+                class="
+                    col-span-10
+                    overflow-y-auto
+                    p-6
+                    space-y-6
+                "
+            >
+
+                <section
+                    class="
+                        bg-gray-900
+                        border
+                        border-gray-800
+                        rounded-2xl
+                        overflow-hidden
+                    "
+                >
+
+                    <div
+                        class="
+                            px-6
+                            py-5
+                            border-b
+                            border-gray-800
+                            flex
+                            items-center
+                            justify-between
+                            gap-4
+                        "
+                    >
+
+                        <div>
+
+                            <h2 class="text-lg font-bold">
+                                Inventário Descoberto
+                            </h2>
+
+                            <p class="text-sm text-gray-400 mt-1">
+                                Dispositivos identificados automaticamente
+                            </p>
+
+                        </div>
+
+                        <div class="flex gap-2">
+
+                            <input
+                                type="text"
+                                placeholder="Buscar IP ou hostname"
+                                class="
+                                    w-64
+                                    bg-gray-950
+                                    border
+                                    border-gray-800
+                                    rounded-xl
+                                    px-4
+                                    py-2
+                                    text-sm
+                                    outline-none
+                                    focus:border-blue-500
+                                "
+                            >
+
+                            <button
+                                type="button"
+                                class="
+                                    bg-blue-600
+                                    hover:bg-blue-500
+                                    transition
+                                    px-5
+                                    rounded-xl
+                                    text-sm
+                                    font-medium
+                                "
+                            >
+                                Buscar
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <div class="overflow-x-auto">
+
+                        <table class="w-full min-w-[1200px]">
+
+                            <thead
+                                class="
+                                    bg-gray-950
+                                    border-b
+                                    border-gray-800
+                                    text-xs
+                                    uppercase
+                                    tracking-wider
+                                    text-gray-500
+                                "
+                            >
+
+                                <tr>
+
+                                    <th class="px-5 py-4 text-left">Origem</th>
+                                    <th class="px-5 py-4 text-left">IP</th>
+                                    <th class="px-5 py-4 text-left">MAC</th>
+                                    <th class="px-5 py-4 text-left">Hostname</th>
+                                    <th class="px-5 py-4 text-left">Protocolos</th>
+                                    <th class="px-5 py-4 text-left">Última descoberta</th>
+                                    <th class="px-5 py-4 text-left">Status</th>
+                                    <th class="px-5 py-4 text-right">Ações</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody class="divide-y divide-gray-800 text-sm">
+
+                            {% if dispositivos %}
+
+                                {% for d in dispositivos %}
+
+                                <tr class="hover:bg-gray-800/30 transition">
+
+                                    <td class="px-5 py-4">
+
+                                        <span class="badge-blue">
+                                            Agent
+                                        </span>
+
+                                    </td>
+
+                                    <td class="px-5 py-4 font-mono text-gray-300">
+                                        {{ d.ip }}
+                                    </td>
+
+                                    <td class="px-5 py-4 font-mono text-xs text-gray-400">
+                                        {{ d.mac or "-" }}
+                                    </td>
+
+                                    <td class="px-5 py-4 text-gray-300">
+                                        {{ d.hostname or "-" }}
+                                    </td>
+
+                                    <td class="px-5 py-4">
+
+                                        <div class="flex flex-wrap gap-2">
+
+                                            {% if d.http %}
+                                                <span class="badge-blue">HTTP</span>
+                                            {% endif %}
+
+                                            {% if d.https %}
+                                                <span class="badge-cyan">HTTPS</span>
+                                            {% endif %}
+
+                                            {% if d.rtsp %}
+                                                <span class="badge-purple">RTSP</span>
+                                            {% endif %}
+
+                                            {% if d.snmp %}
+                                                <span class="badge-amber">SNMP</span>
+                                            {% endif %}
+
+                                            {% if d.ssh %}
+                                                <span class="badge-green">SSH</span>
+                                            {% endif %}
+
+                                        </div>
+
+                                    </td>
+
+                                    <td class="px-5 py-4 text-xs text-gray-400">
+
+                                        {{ d.ultima_descoberta.strftime('%d/%m/%Y %H:%M') if d.ultima_descoberta else '-' }}
+
+                                    </td>
+
+                                    <td class="px-5 py-4">
+
+                                        {% if d.status_descoberta == "online" %}
+
+                                        <span class="badge-green">
+                                            Online
+                                        </span>
+
+                                        {% elif d.status_descoberta == "atencao" %}
+
+                                        <span class="badge-amber">
+                                            Atenção
+                                        </span>
+
+                                        {% else %}
+
+                                        <span class="badge-red">
+                                            Offline
+                                        </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td class="px-5 py-4">
+
+                                        <div class="flex justify-end gap-2">
+
+                                            <button
+                                                type="button"
+                                                data-id="{{ d.id }}"
+                                                class="
+                                                    btn-add
+                                                    bg-blue-600
+                                                    hover:bg-blue-500
+                                                    transition
+                                                    px-4
+                                                    py-2
+                                                    rounded-xl
+                                                    text-xs
+                                                    font-semibold
+                                                    shadow-lg
+                                                    shadow-blue-500/10
+                                                "
+                                            >
+                                                + Adicionar
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="
+                                                    bg-gray-800
+                                                    hover:bg-gray-700
+                                                    border
+                                                    border-gray-700
+                                                    transition
+                                                    px-4
+                                                    py-2
+                                                    rounded-xl
+                                                    text-xs
+                                                "
+                                            >
+                                                Detalhes
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            {% else %}
+
+                                <tr>
+
+                                    <td
+                                        colspan="8"
+                                        class="
+                                            py-16
+                                            text-center
+                                            text-gray-500
+                                        "
+                                    >
+
+                                        Nenhum dispositivo encontrado
+
+                                    </td>
+
+                                </tr>
+
+                            {% endif %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+
+document.querySelectorAll(".btn-add").forEach(btn => {
+
+    btn.addEventListener("click", async () => {
+
+        const inventarioId = btn.dataset.id
+
+        btn.disabled = true
+
+        btn.innerHTML = "Adicionando..."
+
+        try {
+
+            const response = await fetch(
+
+                "/dispositivos/adicionar",
+
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type": "application/json"
+
+                    },
+
+                    body: JSON.stringify({
+
+                        inventario_id: inventarioId
+
+                    })
+
+                }
+
+            )
+
+            const data = await response.json()
+
+            if (data.status === "ok") {
+
+                btn.innerHTML = "Adicionado"
+
+                btn.classList.remove("bg-blue-600")
+
+                btn.classList.add("bg-emerald-600")
+
+                setTimeout(() => {
+
+                    location.reload()
+
+                }, 700)
+
+            } else {
+
+                btn.innerHTML = "Erro"
+
+                btn.classList.remove("bg-blue-600")
+
+                btn.classList.add("bg-red-600")
+
+                console.error(data)
+
+            }
+
+        } catch (err) {
+
+            btn.innerHTML = "Erro"
+
+            btn.classList.remove("bg-blue-600")
+
+            btn.classList.add("bg-red-600")
+
+            console.error(err)
+
+        }
+
+    })
+
+})
+
+</script>
+
+<style>
+
+.filter-btn{
+    width:100%;
+    background:#111827;
+    border:1px solid #1f2937;
+    border-radius:0.75rem;
+    padding:0.5rem 0;
+    font-size:0.875rem;
+    transition:.2s;
+}
+
+.filter-btn:hover{
+    background:#1f2937;
+}
+
+.filter-btn-purple{
+    width:100%;
+    background:rgba(168,85,247,.1);
+    color:#c084fc;
+    border:1px solid rgba(168,85,247,.2);
+    border-radius:0.75rem;
+    padding:0.5rem 0;
+    font-size:0.875rem;
+    transition:.2s;
+}
+
+.filter-btn-blue{
+    width:100%;
+    background:rgba(59,130,246,.1);
+    color:#60a5fa;
+    border:1px solid rgba(59,130,246,.2);
+    border-radius:0.75rem;
+    padding:0.5rem 0;
+    font-size:0.875rem;
+    transition:.2s;
+}
+
+.filter-btn-cyan{
+    width:100%;
+    background:rgba(6,182,212,.1);
+    color:#22d3ee;
+    border:1px solid rgba(6,182,212,.2);
+    border-radius:0.75rem;
+    padding:0.5rem 0;
+    font-size:0.875rem;
+    transition:.2s;
+}
+
+.filter-btn-amber{
+    width:100%;
+    background:rgba(245,158,11,.1);
+    color:#fbbf24;
+    border:1px solid rgba(245,158,11,.2);
+    border-radius:0.75rem;
+    padding:0.5rem 0;
+    font-size:0.875rem;
+    transition:.2s;
+}
+
+.badge-blue{
+    background:rgba(59,130,246,.1);
+    color:#60a5fa;
+    border:1px solid rgba(59,130,246,.2);
+    padding:.25rem .75rem;
+    border-radius:.5rem;
+    font-size:.75rem;
+    font-weight:500;
+}
+
+.badge-cyan{
+    background:rgba(6,182,212,.1);
+    color:#22d3ee;
+    border:1px solid rgba(6,182,212,.2);
+    padding:.25rem .75rem;
+    border-radius:.5rem;
+    font-size:.75rem;
+    font-weight:500;
+}
+
+.badge-purple{
+    background:rgba(168,85,247,.1);
+    color:#c084fc;
+    border:1px solid rgba(168,85,247,.2);
+    padding:.25rem .75rem;
+    border-radius:.5rem;
+    font-size:.75rem;
+    font-weight:500;
+}
+
+.badge-amber{
+    background:rgba(245,158,11,.1);
+    color:#fbbf24;
+    border:1px solid rgba(245,158,11,.2);
+    padding:.25rem .75rem;
+    border-radius:.5rem;
+    font-size:.75rem;
+    font-weight:500;
+}
+
+.badge-green{
+    background:rgba(16,185,129,.1);
+    color:#34d399;
+    border:1px solid rgba(16,185,129,.2);
+    padding:.25rem .75rem;
+    border-radius:.5rem;
+    font-size:.75rem;
+    font-weight:500;
+}
+
+.badge-yellow{
+    background:rgba(234,179,8,.1);
+    color:#facc15;
+    border:1px solid rgba(234,179,8,.2);
+    padding:.25rem .75rem;
+    border-radius:.5rem;
+    font-size:.75rem;
+    font-weight:500;
+}
+
+.badge-red{
+    background:rgba(244,63,94,.1);
+    color:#fb7185;
+    border:1px solid rgba(244,63,94,.2);
+    padding:.25rem .75rem;
+    border-radius:.5rem;
+    font-size:.75rem;
+    font-weight:500;
+}
+
+</style>
+<script>
+setInterval(() => {
+    location.reload();
+}, 60000);
+</script>
 </body>
 </html>
+

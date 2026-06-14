@@ -243,7 +243,7 @@ def agent_heartbeat():
 
     empresa_id = empresa[0]
 
-    nome_maquina = data.get("nome_maquina")
+    nome_maquina = data.get("hostname")
     ip_local = data.get("ip_local")
     agora = datetime.datetime.now()
 
@@ -262,16 +262,82 @@ def agent_heartbeat():
 
         cursor.execute("""
             UPDATE agentes
-            SET ultimo_heartbeat = %s, ip_local = %s
+            SET ultimo_heartbeat = %s,
+                ip_local = %s,
+
+                cpu = %s,
+                ram = %s,
+                disco = %s,
+
+                uptime = %s,
+                sistema = %s,
+                kernel = %s
             WHERE id = %s
-        """, (agora, ip_local, agente_id))
+        """, (agora,
+             ip_local,
+
+             data.get("cpu"),
+             data.get("ram"),
+             data.get("disco"),
+
+             data.get("uptime"),
+             data.get("sistema"),
+             data.get("kernel"),
+
+             agente_id
+))
 
     else:
         cursor.execute("""
-            INSERT INTO agentes (empresa_id, nome_maquina, ip_local, ultimo_heartbeat)
-            VALUES (%s, %s, %s, %s)
-            RETURNING id
-        """, (empresa_id, nome_maquina, ip_local, agora))
+            INSERT INTO agentes (
+
+                empresa_id,
+                nome_maquina,
+                ip_local,
+                ultimo_heartbeat,
+
+                cpu,
+                ram,
+                disco,
+
+                uptime,
+                sistema,
+                kernel
+
+)
+            VALUES (
+
+                %s,
+                %s,
+                %s,
+                %s,
+
+                %s,
+                %s,
+                %s,
+
+                %s,
+                %s,
+                %s
+
+)
+               RETURNING id
+            """, (
+
+                empresa_id,
+                nome_maquina,
+                ip_local,
+                agora,
+
+                data.get("cpu"),
+                data.get("ram"),
+                data.get("disco"),
+
+                data.get("uptime"),
+                data.get("sistema"),
+                data.get("kernel")
+
+            ))
 
         agente_id = cursor.fetchone()[0]
 
@@ -407,70 +473,265 @@ def agent_resultado():
 
     return jsonify({"status": "recebido"})
 
-# ==============================
-# 🎥 STREAM
-# ==============================
-@agent_bp.route("/stream", methods=["POST"])
-def receber_stream():
-    """
-    Recebe e armazena frames de vídeo enviados por agentes (câmeras).
 
-    Esta função:
-    - Recebe requisições contendo frames de vídeo (imagem)
-    - Identifica a câmera pelo camera_id
-    - Armazena o frame mais recente em cache (memória)
-    - Retorna confirmação simples ao agente
-
-    Fluxo:
-    1. Obtém token do header Authorization
-    2. Valida presença do token (não valida autenticidade)
-    3. Recebe dados via multipart/form-data:
-        - camera_id
-        - frame (arquivo de imagem)
-    4. Valida campos obrigatórios
-    5. Lê o conteúdo do frame
-    6. Armazena no cache em memória (frames_cache)
-    7. Retorna "ok"
-
-    Headers:
-        Authorization (str): Token da empresa (obrigatório, mas não validado)
-
-    Form-data:
-        camera_id (str): Identificador da câmera
-        frame (file): Imagem capturada (frame atual)
-
-    Returns:
-        str:
-            "ok" → sucesso
-            "erro" → token ausente (401)
-            "dados inválidos" → campos faltando (400)
-
-    Armazenamento:
-        - Utiliza cache em memória (dict global: frames_cache)
-        - Estrutura:
-            frames_cache[camera_id] = bytes do frame
-
-    Observações:
-        - Apenas o último frame é mantido por câmera
-        - Frames anteriores são sobrescritos
-        - Não há persistência em disco ou banco
-        - Não há validação do token (apenas presença)
-
-
-    """
+@agent_bp.route("/discovery", methods=["POST"])
+def agent_discovery():
 
     token = request.headers.get("Authorization")
 
     if not token:
-        return "erro", 401
+        return jsonify({"erro": "Token ausente"}), 401
 
-    camera_id = request.form.get("camera_id")
-    frame = request.files.get("frame")
+    conn = get_db()
+    cursor = conn.cursor()
 
-    if not frame or not camera_id:
-        return "dados inválidos", 400
+    # ==============================
+    # VALIDAR EMPRESA
+    # ==============================
+    cursor.execute("""
 
-    # Armazena o frame mais recente da câmera em memória
-    frames_cache[camera_id] = frame.read()
+        SELECT id
+        FROM empresas
+        WHERE token_api = %s
 
-    return "ok"
+    """, (token,))
+
+    empresa = cursor.fetchone()
+
+    if not empresa:
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({"erro": "Token inválido"}), 401
+
+    empresa_id = empresa[0]
+
+    # ==============================
+    # DADOS RECEBIDOS
+    # ==============================
+    data = request.get_json(silent=True) or {}
+
+    devices = data.get("devices", [])
+
+    agente_id = data.get("agente_id")
+
+    # ==============================
+    # LOOP DEVICES
+    # ==============================
+    for device in devices:
+
+        cursor.execute("""
+
+            INSERT INTO inventario_dispositivos (
+
+                empresa_id,
+                agente_id,
+
+                ip,
+                mac,
+                hostname,
+
+                ssh,
+                snmp,
+                http,
+                https,
+                rtsp,
+
+                ping_ativo,
+                latencia,
+
+                ultima_descoberta
+
+            )
+
+            VALUES (
+
+                %s,
+                %s,
+
+                %s,
+                %s,
+                %s,
+
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+
+                %s,
+                %s,
+
+                NOW()
+
+            )
+
+            ON CONFLICT (empresa_id, ip)
+
+            DO UPDATE SET
+
+                agente_id = EXCLUDED.agente_id,
+
+                mac = EXCLUDED.mac,
+                hostname = EXCLUDED.hostname,
+
+                ssh = EXCLUDED.ssh,
+                snmp = EXCLUDED.snmp,
+                http = EXCLUDED.http,
+                https = EXCLUDED.https,
+                rtsp = EXCLUDED.rtsp,
+
+                ping_ativo = EXCLUDED.ping_ativo,
+                latencia = EXCLUDED.latencia,
+
+                ultima_descoberta = NOW()
+
+        """, (
+
+            empresa_id,
+            agente_id,
+
+            device.get("ip"),
+            device.get("mac"),
+            device.get("hostname"),
+
+            device.get("ssh"),
+            device.get("snmp"),
+            device.get("http"),
+            device.get("https"),
+            device.get("rtsp"),
+
+            device.get("ping_ativo"),
+            device.get("latencia")
+
+        ))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+
+        "status": "ok"
+
+    })
+
+@agent_bp.route("/status", methods=["POST"])
+def agent_status():
+
+    token = request.headers.get("Authorization")
+
+    if not token:
+
+        return jsonify({
+
+            "erro": "Token ausente"
+
+        }), 401
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # ==========================================
+    # VALIDAR EMPRESA
+    # ==========================================
+    cursor.execute("""
+
+        SELECT id
+        FROM empresas
+        WHERE token_api = %s
+
+    """, (token,))
+
+    empresa = cursor.fetchone()
+
+    if not empresa:
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+
+            "erro": "Token inválido"
+
+        }), 401
+
+    empresa_id = empresa[0]
+
+    # ==========================================
+    # MARCAR DISPOSITIVOS ANTIGOS COMO OFFLINE
+    # ==========================================
+    cursor.execute("""
+
+        UPDATE dispositivos
+
+        SET
+
+            ping_ativo = FALSE,
+            status = 'offline'
+
+        WHERE empresa_id = %s
+
+          AND ultimo_ping IS NOT NULL
+
+          AND ultimo_ping < NOW() - INTERVAL '30 seconds'
+
+    """, (empresa_id,))
+
+    # ==========================================
+    # DADOS RECEBIDOS
+    # ==========================================
+    data = request.get_json(silent=True) or {}
+
+    devices = data.get("devices", [])
+
+    # ==========================================
+    # LOOP DEVICES
+    # ==========================================
+    for device in devices:
+
+        ip = device.get("ip")
+
+        if not ip:
+            continue
+
+        cursor.execute("""
+
+            UPDATE dispositivos
+
+            SET
+
+                ping_ativo = %s,
+                latencia = %s,
+
+                status = %s,
+
+                ultimo_ping = NOW()
+
+            WHERE empresa_id = %s
+            AND ip = %s
+
+        """, (
+
+            device.get("ping_ativo"),
+            device.get("latencia"),
+
+            device.get("status"),
+
+            empresa_id,
+            ip
+
+        ))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+
+        "status": "ok"
+
+    })

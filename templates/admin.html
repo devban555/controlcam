@@ -1,30 +1,48 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Control Cam | Admin Global</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ControlCam NOC - Admin Global</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #e2e8f0; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-
-        .glass-card {
-            background: rgba(30, 41, 59, 0.4);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #04060d; 
+            color: #e2e8f0; 
+        }
+        
+        .font-tech { 
+            font-family: 'JetBrains Mono', monospace; 
         }
 
-        /* Blindagem de Inputs contra reset do navegador */
+        .glass-card {
+            background-color: #090d16;
+            border: 1px solid rgba(30, 41, 59, 0.8);
+            box-shadow: 0 0 30px -5px rgba(6, 182, 212, 0.02);
+            border-radius: 12px;
+        }
+
+        /* Blindagem Avançada de Inputs contra Reset de Navegador */
         input, select {
-            background-color: #1e293b !important;
-            border: 1px solid #334155 !important;
-            color: white !important;
+            background-color: #05070d !important;
+            border: 1px solid #1e293b !important;
+            color: #e2e8f0 !important;
             outline: none !important;
+            transition: all 0.2s ease-in-out;
+        }
+
+        input:focus, select:focus {
+            border-color: #06b6d4 !important;
+            box-shadow: 0 0 10px -2px rgba(6, 182, 212, 0.2) !important;
+        }
+
+        input::placeholder {
+            color: #475569;
         }
 
         .token-cell {
@@ -34,86 +52,152 @@
             white-space: nowrap;
         }
 
-        .btn-action {
-            @apply flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95;
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070a14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
         }
     </style>
 </head>
 
-<body class="min-h-screen p-6 md:p-12">
+<body class="min-h-screen p-6 md:p-12 text-slate-200 antialiased selection:bg-cyan-500/30">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto space-y-8">
 
-        <header class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+        <!-- STICKY HEADER -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800/80">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-900/40 border border-white/10">
-                    <i class="fa-solid fa-gears text-white text-2xl"></i>
+                <div class="w-14 h-14 bg-gradient-to-br from-cyan-950/40 to-slate-900 border border-cyan-500/30 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-950/20">
+                    <i class="fa-solid fa-gears text-cyan-400 text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-extrabold text-white tracking-tight">Painel Global</h1>
-                    <p class="text-slate-500 font-medium text-sm">Administração de instâncias e acessos multinível</p>
+                    <h1 class="text-2xl font-extrabold text-white tracking-tight">Painel Global Admin</h1>
+                    <p class="text-slate-500 font-tech text-xs mt-0.5 uppercase tracking-wider">Orquestração de Instâncias e Matrizes Multinível</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <a href="{{ url_for('auth.registro') }}" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-900/20">
-                    <i class="fa-solid fa-user-plus mr-2"></i> Novo Usuário
+                <a href="{{ url_for('auth.registro') }}" class="bg-cyan-950/40 hover:bg-cyan-900/50 text-cyan-400 hover:text-cyan-300 border border-cyan-500/20 hover:border-cyan-400/40 px-4 py-2 rounded-lg font-tech font-bold text-xs transition-all tracking-wider uppercase flex items-center gap-2 no-underline">
+                    <i class="fa-solid fa-user-plus text-[11px]"></i> Novo Usuário
                 </a>
-                <a href="{{ url_for('auth.logout') }}" class="bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white px-5 py-3 rounded-xl border border-red-500/20 transition-all font-bold text-sm">
+                <a href="{{ url_for('auth.logout') }}" class="bg-rose-950/40 hover:bg-rose-900/40 text-rose-400 border border-rose-900/50 px-4 py-2 rounded-lg transition-all font-tech font-bold text-xs tracking-wider uppercase flex items-center justify-center">
                     <i class="fa-solid fa-power-off"></i>
                 </a>
             </div>
         </header>
 
-        <div class="glass-card p-6 mb-10 border-indigo-500/10">
-            <h2 class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-4 ml-1">Registrar Organização</h2>
-            <form method="POST" action="{{ url_for('admin.criar_empresa') }}" class="flex flex-col md:flex-row gap-3">
-                <div class="relative flex-1">
-                    <i class="fa-solid fa-building absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                    <input name="nome_empresa" placeholder="Nome da nova empresa ou cliente" required
-                           class="w-full pl-11 pr-4 py-3 rounded-xl text-sm focus:border-indigo-500 transition-all">
+        <!-- FORMULÁRIO DE CADASTRO DE ORGANIZAÇÃO -->
+        <div class="glass-card p-6">
+            <h2 class="text-[11px] font-tech font-bold text-cyan-400 uppercase tracking-widest mb-4">
+                Registrar Nova Organização / Cluster
+            </h2>
+
+            <form method="POST" action="{{ url_for('admin.criar_empresa') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 font-tech text-xs">
+                
+                <div class="relative md:col-span-2 lg:col-span-3">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-building text-xs"></i>
+                    </div>
+                    <input name="nome_empresa" type="text" required placeholder="Nome da empresa, filial ou condomínio" class="w-full pl-10 pr-4 py-3 rounded-lg input-field">
                 </div>
-                <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-900/20">
-                    Criar Empresa
-                </button>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-envelope text-xs"></i>
+                    </div>
+                    <input type="email" name="email" placeholder="E-mail de contato corporativo" class="w-full pl-10 pr-4 py-3 rounded-lg input-field">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-phone text-xs"></i>
+                    </div>
+                    <input type="text" name="telefone" placeholder="Telefone de acionamento" class="w-full pl-10 pr-4 py-3 rounded-lg input-field">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-user-tie text-xs"></i>
+                    </div>
+                    <input type="text" name="responsavel" placeholder="Diretor / Responsável Técnico" class="w-full pl-10 pr-4 py-3 rounded-lg input-field">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-city text-xs"></i>
+                    </div>
+                    <input type="text" name="cidade" placeholder="Cidade de operação" class="w-full pl-10 pr-4 py-3 rounded-lg input-field">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-map-location-dot text-xs"></i>
+                    </div>
+                    <input type="text" name="estado" placeholder="Estado (UF)" class="w-full pl-10 pr-4 py-3 rounded-lg input-field">
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-location-dot text-xs"></i>
+                    </div>
+                    <input type="text" name="endereco" placeholder="Logradouro completo" class="w-full pl-10 pr-4 py-3 rounded-lg input-field">
+                </div>
+
+                <div class="md:col-span-2 lg:col-span-3 pt-2">
+                    <button type="submit" class="w-full bg-cyan-950/40 hover:bg-cyan-900/50 text-cyan-400 hover:text-cyan-300 border border-cyan-500/20 hover:border-cyan-400/40 font-bold py-3.5 rounded-lg uppercase tracking-widest cursor-pointer transition-all">
+                        Inicializar Nova Instância
+                    </button>
+                </div>
             </form>
         </div>
 
-        <div class="grid grid-cols-1 gap-10">
+        <!-- GRIDS DE GESTÃO -->
+        <div class="space-y-8">
 
+            <!-- TABELA: EMPRESAS -->
             <section class="glass-card overflow-hidden">
-                <div class="px-8 py-5 border-b border-white/5 bg-white/5 flex justify-between items-center">
-                    <h2 class="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-sitemap text-indigo-500"></i> Empresas Ativas
+                <div class="px-6 py-4 border-b border-slate-800/80 bg-slate-900/20 flex justify-between items-center">
+                    <h2 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-sitemap text-cyan-400"></i> Instâncias / Empresas Ativas
                     </h2>
                 </div>
+                
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-white/5 bg-slate-900/40">
-                                <th class="px-8 py-4">ID</th>
-                                <th class="px-8 py-4">Organização</th>
-                                <th class="px-8 py-4">API Token</th>
-                                <th class="px-8 py-4 text-right">Ações de Instância</th>
+                            <tr class="text-slate-500 text-[10px] uppercase font-tech font-bold tracking-widest border-b border-slate-800/80 bg-[#05070d]">
+                                <th class="px-6 py-3.5">ID</th>
+                                <th class="px-6 py-3.5">Organização de Destino</th>
+                                <th class="px-6 py-3.5">Token de Comunicação API</th>
+                                <th class="px-6 py-3.5 text-right">Ações Operacionais</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-white/5 font-medium">
+                        <tbody class="divide-y divide-slate-800/60 font-tech text-xs">
                             {% for empresa in empresas %}
-                            <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="px-8 py-4 font-mono text-[11px] text-slate-500">#{{ empresa.id }}</td>
-                                <td class="px-8 py-4 text-white text-sm font-bold">{{ empresa.nome_empresa }}</td>
-                                <td class="px-8 py-4">
-                                    <div class="token-cell font-mono text-[10px] text-slate-400 bg-black/30 px-3 py-1 rounded-md border border-white/5 cursor-help" title="{{ empresa.token_api }}">
+                            <tr class="hover:bg-slate-900/20 transition-colors">
+                                <td class="px-6 py-4 text-slate-500">#{{ empresa.id }}</td>
+                                <td class="px-6 py-4 text-white font-sans font-bold text-sm">{{ empresa.nome_empresa }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="token-cell text-[11px] text-slate-400 bg-[#05070d] px-2.5 py-1 rounded border border-slate-800 cursor-help" title="{{ empresa.token_api }}">
                                         {{ empresa.token_api }}
                                     </div>
                                 </td>
-                                <td class="px-8 py-4">
+                                <td class="px-6 py-4">
                                     <div class="flex justify-end gap-2">
-                                        <a href="{{ url_for('admin.ver_agentes', empresa_id=empresa.id) }}" class="btn-action bg-green-600/10 text-green-500 hover:bg-green-600 hover:text-white border border-green-500/20">
+                                        <a href="{{ url_for('admin.ver_agentes', empresa_id=empresa.id) }}" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 uppercase tracking-wide no-underline hover:bg-emerald-500/20 transition-colors">
                                             <i class="fa-solid fa-server"></i> Agentes
                                         </a>
-                                        <a href="{{ url_for('admin.excluir_empresa', empresa_id=empresa.id) }}" class="btn-action bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white border border-red-500/20" onclick="return confirm('ATENÇÃO: Excluir a empresa removerá todos os dados e usuários vinculados!')">
-                                            <i class="fa-solid fa-trash"></i>
+                                        <a href="{{ url_for('admin.excluir_empresa', empresa_id=empresa.id) }}" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[10px] font-bold bg-rose-500/10 border border-rose-500/20 text-rose-400 uppercase tracking-wide no-underline hover:bg-rose-500/20 transition-colors" onclick="return confirm('ALERTA CRÍTICO: Excluir esta organização removerá permanentemente todas as credenciais, nós e logs vinculados!')">
+                                            <i class="fa-solid fa-trash"></i> Purga
                                         </a>
                                     </div>
                                 </td>
@@ -124,55 +208,57 @@
                 </div>
             </section>
 
+            <!-- TABELA: USUÁRIOS -->
             <section class="glass-card overflow-hidden">
-                <div class="px-8 py-5 border-b border-white/5 bg-white/5 flex justify-between items-center">
-                    <h2 class="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-users text-blue-500"></i> Gestão de Contas
+                <div class="px-6 py-4 border-b border-slate-800/80 bg-slate-900/20 flex justify-between items-center">
+                    <h2 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-users text-cyan-400"></i> Vetores de Acesso / Gestão de Operadores
                     </h2>
                 </div>
+                
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-white/5 bg-slate-900/40">
-                                <th class="px-8 py-4">Identificador</th>
-                                <th class="px-8 py-4">Usuário</th>
-                                <th class="px-8 py-4">Vínculo Atual</th>
-                                <th class="px-8 py-4">Migração de Empresa</th>
-                                <th class="px-8 py-4 text-right">Ações</th>
+                            <tr class="text-slate-500 text-[10px] uppercase font-tech font-bold tracking-widest border-b border-slate-800/80 bg-[#05070d]">
+                                <th class="px-6 py-3.5">Identificador</th>
+                                <th class="px-6 py-3.5">Operador</th>
+                                <th class="px-6 py-3.5">Vínculo de Escopo</th>
+                                <th class="px-6 py-3.5">Migração Dinâmica de Cluster</th>
+                                <th class="px-6 py-3.5 text-right">Controle</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-white/5 font-medium">
+                        <tbody class="divide-y divide-slate-800/60 font-tech text-xs">
                             {% for user in usuarios %}
-                            <tr class="hover:bg-white/[0.02] transition-colors">
-                                <td class="px-8 py-4 font-mono text-[11px] text-slate-500">ID-{{ user.id }}</td>
-                                <td class="px-8 py-4">
+                            <tr class="hover:bg-slate-900/20 transition-colors">
+                                <td class="px-6 py-4 text-slate-500">UID-{{ user.id }}</td>
+                                <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-circle-user text-slate-500"></i>
-                                        <span class="text-white text-sm font-bold">{{ user.username }}</span>
+                                        <i class="fa-solid fa-circle-user text-slate-600 text-sm"></i>
+                                        <span class="text-white font-sans font-bold text-sm">{{ user.username }}</span>
                                     </div>
                                 </td>
-                                <td class="px-8 py-4">
-                                    <span class="text-[10px] font-black bg-blue-600/10 text-blue-400 px-2 py-1 rounded border border-blue-500/20">
+                                <td class="px-6 py-4">
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-sans font-bold bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 uppercase">
                                         {{ user.nome_empresa }}
                                     </span>
                                 </td>
-                                <td class="px-8 py-4">
-                                    <form method="POST" action="{{ url_for('admin.alterar_empresa_usuario') }}" class="flex items-center gap-2">
+                                <td class="px-6 py-4">
+                                    <form method="POST" action="{{ url_for('admin.alterar_empresa_usuario') }}" class="flex items-center gap-2 m-0">
                                         <input type="hidden" name="usuario_id" value="{{ user.id }}">
-                                        <select name="empresa_id" class="px-3 py-1.5 rounded-lg text-xs font-bold border-none cursor-pointer hover:bg-slate-700 transition-colors">
+                                        <select name="empresa_id" class="px-2.5 py-1.5 rounded-md text-[11px] font-tech font-bold border cursor-pointer bg-[#05070d] text-slate-200">
                                             {% for emp in empresas %}
                                                 <option value="{{ emp.id }}" {% if emp.id == user.empresa_id %}selected{% endif %}>
                                                     {{ emp.nome_empresa }}
                                                 </option>
                                             {% endfor %}
                                         </select>
-                                        <button class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-500 transition-all active:scale-90">
+                                        <button type="submit" class="bg-cyan-950/60 text-cyan-400 p-2 rounded-md border border-cyan-500/20 hover:bg-cyan-500 hover:text-black hover:border-cyan-500 transition-all cursor-pointer flex items-center justify-center w-8 h-8">
                                             <i class="fa-solid fa-check text-[10px]"></i>
                                         </button>
                                     </form>
                                 </td>
-                                <td class="px-8 py-4 text-right">
-                                    <a href="{{ url_for('admin.excluir_usuario', usuario_id=user.id) }}" class="text-slate-500 hover:text-red-500 transition-colors p-2" onclick="return confirm('Remover este usuário?')">
+                                <td class="px-6 py-4 text-right">
+                                    <a href="{{ url_for('admin.excluir_usuario', usuario_id=user.id) }}" class="text-slate-600 hover:text-rose-400 transition-colors p-2 inline-block" title="Revogar acesso do usuário" onclick="return confirm('Confirma a revogação completa de acesso deste operador?')">
                                         <i class="fa-solid fa-user-minus"></i>
                                     </a>
                                 </td>

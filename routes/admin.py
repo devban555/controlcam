@@ -236,23 +236,71 @@ def criar_empresa():
     """
 
     nome = request.form.get("nome_empresa")
+    email = request.form.get("email")
+    telefone = request.form.get("telefone")
+    responsavel = request.form.get("responsavel")
+    cidade = request.form.get("cidade")
+    estado = request.form.get("estado")
+    endereco = request.form.get("endereco")
 
     if not nome:
-        return "Nome inválido"
+        return "Nome da empresa inválido"
 
-    # Geração de token seguro para integração externa
     token = secrets.token_hex(32)
 
     conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO empresas (nome_empresa, token_api, criada_em)
-        VALUES (%s, %s, NOW())
-    """, (nome, token))
+
+            INSERT INTO empresas (
+
+                nome_empresa,
+                email,
+                telefone,
+                responsavel,
+                cidade,
+                estado,
+                endereco,
+
+                token_api,
+                criada_em
+
+            )
+
+            VALUES (
+
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+
+                %s,
+                NOW()
+
+            )
+
+        """, (
+
+        nome,
+        email,
+        telefone,
+        responsavel,
+        cidade,
+        estado,
+        endereco,
+
+        token
+
+    ))
 
     conn.commit()
+
     cursor.close()
+    conn.close()
 
     return redirect(url_for("admin.admin_dashboard"))
 

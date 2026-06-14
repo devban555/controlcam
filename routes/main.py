@@ -1448,7 +1448,157 @@ def relatorio_pdf():
 @login_required
 def dashboard():
 
-    return render_template("dashboard.html")
+    conn = get_db()
+    cursor = conn.cursor()
+
+    condominios = []
+
+    # Buscar todos os condomínios/empresas
+    cursor.execute("""
+        SELECT id, nome_empresa
+        FROM empresas
+        ORDER BY nome_empresa
+    """)
+
+    empresas = cursor.fetchall()
+
+    agora = datetime.datetime.now()
+
+    for empresa in empresas:
+
+        empresa_id = empresa[0]
+        nome_empresa = empresa[1]
+
+        # Buscar dispositivos do condomínio
+        cursor.execute("""
+            SELECT status, ping_ativo, latencia
+            FROM dispositivos
+            WHERE empresa_id = %s
+        """, (empresa_id,))
+
+        dispositivos = cursor.fetchall()
+
+        total = len(dispositivos)
+
+        online = sum(
+            1 for d in dispositivos
+            if d[0] == "online"
+        )
+
+        offline = total - online
+
+        avisos = sum(
+            1 for d in dispositivos
+            if d[0] in ("atencao", "atenção", "offline")
+        )
+
+        latencias_validas = [
+            d[2] for d in dispositivos
+            if d[2] is not None
+        ]
+
+        ping_medio = round(
+            sum(latencias_validas) / len(latencias_validas)
+        ) if latencias_validas else 0
+
+        if total > 0:
+            saude = round((online / total) * 100)
+        else:
+            saude = 0
+
+        # Buscar status do Agent
+        cursor.execute("""
+            SELECT ultimo_heartbeat
+            FROM agentes
+            WHERE empresa_id = %s
+            ORDER BY ultimo_heartbeat DESC
+            LIMIT 1
+        """, (empresa_id,))
+
+        agente = cursor.fetchone()
+
+        agent_status = "OFF"
+
+        if agente and agente[0]:
+            if (agora - agente[0]).total_seconds() < 60:
+                agent_status = "ON"
+
+        # Definir estado geral do condomínio
+        if agent_status == "OFF":
+            estado = "CRÍTICO"
+        elif saude >= 90:
+            estado = "SAUDÁVEL"
+        elif saude >= 70:
+            estado = "ATENÇÃO"
+        else:
+            estado = "CRÍTICO"
+
+        # Definir visual do card
+        if estado == "CRÍTICO":
+            cor = "#ef4444"
+            chip = "chip-danger"
+            borda = "border-red-500/35"
+            glow = "shadow-[0_0_24px_rgba(239,68,68,.10)]"
+
+        elif estado == "ATENÇÃO":
+            cor = "#f59e0b"
+            chip = "chip-warn"
+            borda = "border-amber-500/35"
+            glow = "shadow-[0_0_24px_rgba(245,158,11,.10)]"
+
+        else:
+            cor = "#10b981"
+            chip = "chip-ok"
+            borda = "border-slate-800/80"
+            glow = ""
+
+        condominios.append({
+            "id": empresa_id,
+
+            "nome": nome_empresa,
+
+            # O HTML espera "status"
+            "status": estado,
+
+            "saude": saude,
+
+            # Visual do card
+            "cor": cor,
+            "chip": chip,
+            "borda": borda,
+            "glow": glow,
+
+            # Métricas
+            "dispositivos": total,
+            "online": online,
+            "offline": offline,
+
+            # Agent
+            "agent": "ONLINE" if agent_status == "ON" else "OFFLINE",
+
+            # Por enquanto fixo
+            "link": "ONLINE" if agent_status == "ON" else "OFFLINE",
+
+            # Ping
+            "latencia": f"{ping_medio}ms",
+
+            # Texto do alerta
+            "alerta": (
+                "Sem alertas ativos"
+                if avisos == 0
+                else f"{avisos} dispositivo(s) em atenção"
+            )
+        })
+
+    cursor.close()
+    conn.close()
+
+    print(condominios)
+
+    return render_template(
+        "dashboard.html",
+        condominios=condominios
+    )
 
 
 @main_bp.route("/cadastro-dispositivo", methods=["GET", "POST"])
@@ -1668,20 +1818,40 @@ def discovery():
     # ==========================================
 
     cursor.execute(
-        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        """
+        SELECT empresa_id, tipo
+        FROM usuarios
+        WHERE id = %s
+        """,
         (session["usuario_id"],)
     )
 
     usuario = cursor.fetchone()
 
     if not usuario:
-
         cursor.close()
         conn.close()
 
         return redirect(url_for("auth.logout"))
 
     empresa_id = usuario[0]
+    tipo_usuario = usuario[1]
+
+    empresa_id_url = request.args.get("empresa_id", type=int)
+
+    # Admin Global pode visualizar qualquer condomínio
+    if tipo_usuario == "admin_global" and empresa_id_url:
+
+        cursor.execute("""
+            SELECT id
+            FROM empresas
+            WHERE id = %s
+        """, (empresa_id_url,))
+
+        empresa_existe = cursor.fetchone()
+
+        if empresa_existe:
+            empresa_id = empresa_id_url
 
     # ==========================================
     # NOME DA EMPRESA
@@ -1833,6 +2003,7 @@ def discovery():
 
 
 @main_bp.route("/dispositivos/adicionar", methods=["POST"])
+@login_required
 def adicionar_dispositivo():
 
     data = request.get_json()
@@ -2068,20 +2239,40 @@ def dispositivos():
     conn.commit()
 
     cursor.execute(
-        "SELECT empresa_id FROM usuarios WHERE id = %s",
+        """
+        SELECT empresa_id, tipo
+        FROM usuarios
+        WHERE id = %s
+        """,
         (session["usuario_id"],)
     )
 
     usuario = cursor.fetchone()
 
     if not usuario:
-
         cursor.close()
         conn.close()
 
         return redirect(url_for("auth.logout"))
 
     empresa_id = usuario[0]
+    tipo_usuario = usuario[1]
+
+    empresa_id_url = request.args.get("empresa_id", type=int)
+
+    # Admin Global pode visualizar qualquer condomínio
+    if tipo_usuario == "admin_global" and empresa_id_url:
+
+        cursor.execute("""
+            SELECT id
+            FROM empresas
+            WHERE id = %s
+        """, (empresa_id_url,))
+
+        empresa_existe = cursor.fetchone()
+
+        if empresa_existe:
+            empresa_id = empresa_id_url
 
     # ==========================
     # NOME DA EMPRESA
@@ -2253,7 +2444,8 @@ def dispositivos():
         ultimo_heartbeat=ultimo_heartbeat,
         nome_empresa = nome_empresa,
         saude_rede=saude_rede,
-        saude_cor=saude_cor
+        saude_cor=saude_cor,
+        empresa_id=empresa_id
 
     )
 

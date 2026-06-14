@@ -8,10 +8,10 @@ import os
 # ==============================
 
 DB_CONFIG = {
-    "host": "localhost",
-    "database": "controlcam_db",
-    "user": "devanderson",
-    "password": "123456"
+    "host": os.getenv("DB_HOST", "localhost"),
+    "database": os.getenv("DB_NAME", "controlcam_db"),
+    "user": os.getenv("DB_USER", "devanderson"),
+    "password": os.getenv("DB_PASSWORD", "123456")
 }
 
 # ==============================

@@ -79,18 +79,15 @@
         </div>
     </header>
 
-    <nav class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
-        <a href="{{ url_for('stream.stream') }}" class="btn-nav flex flex-col items-center justify-center gap-2 bg-blue-600 p-4 rounded-2xl text-white shadow-lg shadow-blue-900/20">
-            <i class="fa-solid fa-video text-xl"></i>
-            <span class="text-xs font-bold uppercase tracking-wider">Stream</span>
-        </a>
+
 
         {% set nav_links = [
             ('main.cadastro', 'fa-plus', 'Cadastro'),
             ('main.teste', 'fa-vial', 'Teste'),
             ('main.pesquisa', 'fa-magnifying-glass', 'Pesquisa'),
             ('main.alteracoes', 'fa-pen-to-square', 'Alterações'),
-            ('main.relatorio', 'fa-file-lines', 'Relatório')
+            ('main.relatorio', 'fa-file-lines', 'Relatório'),
+            ('main.dashboard', 'fa-chart-line', 'Dashboard')
         ] %}
 
         {% for route, icon, label in nav_links %}

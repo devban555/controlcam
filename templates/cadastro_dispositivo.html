@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro Dispositivo</title>
+</head>
+<body>
+
+<h1>Cadastro de Dispositivo</h1>
+
+<form method="POST">
+
+    <input type="text" name="nome" placeholder="Nome"><br><br>
+
+    <input type="text" name="categoria" placeholder="Categoria"><br><br>
+
+    <input type="text" name="fabricante" placeholder="Fabricante"><br><br>
+
+    <input type="text" name="modelo" placeholder="Modelo"><br><br>
+
+    <input type="text" name="ip" placeholder="IP"><br><br>
+
+    <input type="text" name="mac" placeholder="MAC"><br><br>
+
+    <input type="text" name="usuario" placeholder="Usuário"><br><br>
+
+    <input type="password" name="senha" placeholder="Senha"><br><br>
+
+    <label>
+        <input type="checkbox" name="ssh_ativo">
+        SSH ativo
+    </label>
+
+    <br><br>
+
+    <label>
+        <input type="checkbox" name="snmp_ativo">
+        SNMP ativo
+    </label>
+
+    <br><br>
+
+    <input type="text" name="community_snmp" placeholder="Community SNMP"><br><br>
+
+    <textarea name="observacoes" placeholder="Observações"></textarea>
+
+    <br><br>
+
+    <button type="submit">
+        Cadastrar
+    </button>
+
+</form>
+
+</body>
+</html>

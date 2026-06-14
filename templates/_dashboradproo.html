@@ -1,0 +1,415 @@
+Segue uma cópia completa para colar em `dashboardpro.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ControlCam | Acompanhamento dos Projetos</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #050914;
+            color: #e5e7eb;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .card {
+            background: linear-gradient(145deg, rgba(15,23,42,.98), rgba(2,6,23,.96));
+            border: 1px solid rgba(51,65,85,.75);
+            box-shadow: 0 18px 40px rgba(0,0,0,.35);
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #07111f, #020617);
+            border-right: 1px solid rgba(51,65,85,.7);
+        }
+
+        .nav-active {
+            background: linear-gradient(90deg, rgba(6,182,212,.28), rgba(59,130,246,.12));
+            border-left: 4px solid #06b6d4;
+            color: #22d3ee;
+        }
+
+        .gauge {
+            width: 100%;
+            height: 170px;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: #f8fafc;
+            stroke-width: 18;
+            stroke-linecap: round;
+            opacity: .95;
+        }
+
+        .gauge-value {
+            fill: none;
+            stroke-width: 18;
+            stroke-linecap: round;
+            stroke-dasharray: 251;
+            animation: dash 900ms ease-out forwards;
+        }
+
+        @keyframes dash {
+            from { stroke-dashoffset: 251; }
+            to { stroke-dashoffset: var(--offset); }
+        }
+
+        .donut {
+            width: 160px;
+            height: 160px;
+            border-radius: 999px;
+            position: relative;
+        }
+
+        .donut::after {
+            content: "";
+            position: absolute;
+            inset: 48px;
+            background: #07111f;
+            border-radius: 999px;
+        }
+
+        .filter {
+            background: rgba(15,23,42,.95);
+            border: 1px solid rgba(51,65,85,.85);
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: #f8fafc;
+            outline: none;
+        }
+
+        .metric-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22d3ee;
+            background: rgba(6,182,212,.1);
+            border: 1px solid rgba(6,182,212,.25);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="min-h-screen flex">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar w-[260px] fixed left-0 top-0 bottom-0 p-5 hidden xl:flex flex-col">
+
+        <div class="flex items-center gap-3 mb-10">
+            <div class="w-14 h-14 rounded-2xl border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-2xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-white">ControlCam</h1>
+                <p class="text-xs tracking-[4px] text-cyan-400">NOC PLATFORM</p>
+            </div>
+        </div>
+
+        <nav class="space-y-2 text-slate-300">
+            <a class="nav-active flex items-center gap-4 px-4 py-3 rounded-xl font-semibold" href="#">
+                <i class="fa-solid fa-chart-simple"></i> Dashboard
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-800/60" href="#">
+                <i class="fa-regular fa-building"></i> Condomínios
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-800/60" href="#">
+                <i class="fa-solid fa-server"></i> Dispositivos
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-800/60" href="#">
+                <i class="fa-regular fa-map"></i> Mapas
+            </a>
+            <a class="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-800/60" href="#">
+                <span class="flex items-center gap-4"><i class="fa-solid fa-triangle-exclamation"></i> Ocorrências</span>
+                <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-lg">8</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-800/60" href="#">
+                <i class="fa-solid fa-headset"></i> Chamados
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-800/60" href="#">
+                <i class="fa-solid fa-chart-line"></i> Analytics
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-800/60" href="#">
+                <i class="fa-solid fa-file-lines"></i> Relatórios
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-800/60" href="#">
+                <i class="fa-solid fa-gear"></i> Configurações
+            </a>
+        </nav>
+
+        <div class="mt-auto card rounded-xl p-4">
+            <p class="text-sm font-bold text-white mb-2">Status do Sistema</p>
+            <p class="text-emerald-400 text-sm"><i class="fa-solid fa-circle text-xs mr-2"></i>Operacional</p>
+            <p class="text-xs text-slate-400 mt-2">Todos os sistemas funcionando</p>
+        </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="xl:ml-[260px] w-full min-h-screen">
+
+        <!-- TOPBAR -->
+        <header class="h-[74px] border-b border-slate-800/80 bg-[#050914]/95 px-7 flex items-center justify-between sticky top-0 z-20">
+            <div class="text-sm">
+                <span class="text-fuchsia-400"><i class="fa-solid fa-chart-column mr-2"></i>Dashboard</span>
+                <span class="mx-3 text-slate-600">›</span>
+                <span class="text-white font-medium">Acompanhamento dos Projetos</span>
+            </div>
+
+            <div class="flex items-center gap-5">
+                <div class="relative hidden md:block">
+                    <input class="bg-transparent border border-slate-700 rounded-xl px-4 py-3 w-72 outline-none text-sm" placeholder="Buscar...">
+                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-4 text-slate-400"></i>
+                </div>
+                <i class="fa-regular fa-bell text-xl text-slate-300"></i>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full border border-cyan-500 flex items-center justify-center text-cyan-400">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-white">Administrador</p>
+                        <p class="text-xs text-slate-400">NOC</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="p-7 space-y-6">
+
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-4xl font-bold text-white">Acompanhamento dos Projetos</h2>
+                    <p class="text-slate-400 mt-2">Visão geral de orçamentos, contratos e status dos projetos</p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button class="filter flex items-center gap-3">
+                        <i class="fa-regular fa-calendar"></i> 01/02/2025 - 05/02/2025
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </button>
+                    <button class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl px-5 font-bold">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+                <select class="filter"><option>Projeto</option><option>Todos</option></select>
+                <select class="filter"><option>Cliente</option><option>Todos</option></select>
+                <select class="filter"><option>Tipo de Projeto</option><option>Todos</option></select>
+                <select class="filter"><option>Departamento</option><option>Todos</option></select>
+                <select class="filter"><option>Gerente do Projeto</option><option>Todos</option></select>
+                <select class="filter"><option>Prioridade</option><option>Todos</option></select>
+                <select class="filter"><option>Status</option><option>Todos</option></select>
+            </div>
+
+            <!-- TOP CARDS -->
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+
+                <div class="card rounded-xl p-6 xl:col-span-4">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="metric-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <h3 class="font-bold">Orçamento</h3>
+                    </div>
+
+                    <svg class="gauge" viewBox="0 0 220 140">
+                        <path class="gauge-bg" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                        <path class="gauge-value" style="--offset:90.5; stroke:#00b8b4;" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                    </svg>
+
+                    <div class="text-center -mt-20 mb-8">
+                        <p class="text-4xl font-bold text-teal-400">63,94%</p>
+                        <p class="text-sm text-slate-400">Utilizado do Orçamento</p>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-slate-400">Total Orçado</p>
+                            <p class="text-white font-semibold">R$ 90.000,00</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400">Total Utilizado</p>
+                            <p class="text-cyan-400 font-semibold">R$ 57.546,00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:col-span-2 space-y-4">
+                    <div class="card rounded-xl p-6 h-[calc(50%-8px)]">
+                        <div class="metric-icon mb-5"><i class="fa-regular fa-file-lines"></i></div>
+                        <p class="font-bold">Orçamento Estimado</p>
+                        <h3 class="text-3xl font-bold mt-5">R$ 90 Mil</h3>
+                        <p class="text-sm text-slate-400 mt-3">Valor total estimado</p>
+                    </div>
+                    <div class="card rounded-xl p-6 h-[calc(50%-8px)]">
+                        <div class="metric-icon mb-5"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <p class="font-bold">Orçamento Consumido</p>
+                        <h3 class="text-3xl font-bold mt-5">R$ 58 Mil</h3>
+                        <p class="text-sm text-cyan-400 mt-3">Valor total consumido</p>
+                    </div>
+                </div>
+
+                <div class="card rounded-xl p-6 xl:col-span-4">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="metric-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                        <h3 class="font-bold">Conclusão dos Projetos</h3>
+                    </div>
+
+                    <svg class="gauge" viewBox="0 0 220 140">
+                        <path class="gauge-bg" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                        <path class="gauge-value" style="--offset:167.3; stroke:#00b8b4;" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                    </svg>
+
+                    <div class="text-center -mt-20 mb-8">
+                        <p class="text-4xl font-bold text-teal-400">33,33%</p>
+                        <p class="text-sm text-slate-400">Média de Conclusão</p>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-slate-400">Projetos Concluídos</p>
+                            <p class="text-white font-semibold">4</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400">Total de Projetos</p>
+                            <p class="text-white font-semibold">12</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:col-span-2 space-y-4">
+                    <div class="card rounded-xl p-6">
+                        <div class="metric-icon mb-5"><i class="fa-regular fa-calendar-days"></i></div>
+                        <p class="font-bold">Término Estimado</p>
+                        <h3 class="text-3xl font-bold mt-5">05/02/2025</h3>
+                        <p class="text-sm text-slate-400 mt-3">Previsão média de término</p>
+                    </div>
+                    <div class="card rounded-xl p-6">
+                        <div class="metric-icon mb-5"><i class="fa-regular fa-calendar-check"></i></div>
+                        <p class="font-bold">Término Real</p>
+                        <h3 class="text-3xl font-bold mt-5">05/02/2025</h3>
+                        <p class="text-sm text-slate-400 mt-3">Data média de conclusão</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- DONUTS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+                <div class="card rounded-xl p-6">
+                    <h3 class="font-bold mb-6"><i class="fa-regular fa-user text-cyan-400 mr-2"></i>Cliente</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="donut" style="background: conic-gradient(#00b8b4 0 33.3%, #f97316 33.3% 66.6%, #7e22ce 66.6% 100%);"></div>
+                        <div class="space-y-2 text-sm">
+                            <p><span class="text-cyan-400">●</span> Cliente A</p>
+                            <p><span class="text-orange-400">●</span> Cliente B</p>
+                            <p><span class="text-purple-500">●</span> Cliente C</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between">
+                        <span class="text-slate-400">Total</span><strong>12</strong>
+                    </div>
+                </div>
+
+                <div class="card rounded-xl p-6">
+                    <h3 class="font-bold mb-6"><i class="fa-solid fa-wave-square text-cyan-400 mr-2"></i>Status</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="donut" style="background: conic-gradient(#00b8b4 0 25%, #ec4899 25% 50%, #7c3aed 50% 75%, #1d4ed8 75% 100%);"></div>
+                        <div class="space-y-2 text-sm">
+                            <p><span class="text-teal-400">●</span> Planejamento</p>
+                            <p><span class="text-pink-400">●</span> Concluído</p>
+                            <p><span class="text-purple-500">●</span> Em Espera</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between">
+                        <span class="text-slate-400">Total</span><strong>12</strong>
+                    </div>
+                </div>
+
+                <div class="card rounded-xl p-6">
+                    <h3 class="font-bold mb-6"><i class="fa-solid fa-briefcase text-cyan-400 mr-2"></i>Departamento</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="donut" style="background: conic-gradient(#0ea5e9 0 33.3%, #1d4ed8 33.3% 66.6%, #f97316 66.6% 100%);"></div>
+                        <div class="space-y-2 text-sm">
+                            <p><span class="text-orange-400">●</span> Infraestrutura</p>
+                            <p><span class="text-blue-400">●</span> Monitoramento</p>
+                            <p><span class="text-blue-700">●</span> Redes</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between">
+                        <span class="text-slate-400">Total</span><strong>12</strong>
+                    </div>
+                </div>
+
+                <div class="card rounded-xl p-6">
+                    <h3 class="font-bold mb-6"><i class="fa-solid fa-cube text-cyan-400 mr-2"></i>Tipo de Projeto</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="donut" style="background: conic-gradient(#0ea5e9 0 66.7%, #f97316 66.7% 100%);"></div>
+                        <div class="space-y-2 text-sm">
+                            <p><span class="text-blue-400">●</span> Instalação</p>
+                            <p><span class="text-orange-400">●</span> Manutenção</p>
+                            <p><span class="text-teal-400">●</span> Migração de TI</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between">
+                        <span class="text-slate-400">Total</span><strong>12</strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- FOOTER METRICS -->
+            <div class="card rounded-xl p-6 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-6 text-center">
+                <div>
+                    <p class="text-slate-300 font-bold">Total de Projetos</p>
+                    <h3 class="text-3xl font-bold mt-3">12</h3>
+                    <p class="text-sm text-slate-400">Todos os projetos</p>
+                </div>
+                <div>
+                    <p class="text-slate-300 font-bold">Em Andamento</p>
+                    <h3 class="text-3xl font-bold mt-3">6</h3>
+                    <p class="text-sm text-slate-400">50% do total</p>
+                </div>
+                <div>
+                    <p class="text-cyan-400 font-bold">Concluídos</p>
+                    <h3 class="text-3xl font-bold mt-3 text-cyan-400">4</h3>
+                    <p class="text-sm text-cyan-400">33,33% do total</p>
+                </div>
+                <div>
+                    <p class="text-pink-400 font-bold">Em Espera</p>
+                    <h3 class="text-3xl font-bold mt-3 text-pink-400">2</h3>
+                    <p class="text-sm text-pink-400">16,67% do total</p>
+                </div>
+                <div>
+                    <p class="text-red-400 font-bold">Atrasados</p>
+                    <h3 class="text-3xl font-bold mt-3 text-red-400">3</h3>
+                    <p class="text-sm text-red-400">25% do total</p>
+                </div>
+                <div>
+                    <p class="text-amber-400 font-bold">Saúde Geral</p>
+                    <h3 class="text-3xl font-bold mt-3 text-amber-400">68%</h3>
+                    <p class="text-sm text-slate-400">Status Geral</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>
+```

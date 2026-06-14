@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ControlCam - NOC Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #060814;
+        }
+        /* Scrollbar customizada estilo NOC/Grafana */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        /* Efeito de brilho neon (Glow) customizado */
+        .glow-green { box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.2); }
+        .glow-yellow { box-shadow: 0 0 15px -3px rgba(245, 158, 11, 0.2); }
+        .glow-red { box-shadow: 0 0 15px -3px rgba(239, 68, 68, 0.2); }
+
+        /* Estilos Customizados para Nova Sidebar Inteligente */
+        :root {
+            --sidebar-width: 256px; /* Equivalente a w-64 */
+        }
+
+        .sidebar-transition {
+            transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1), transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-content-transition {
+            transition: padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Tooltip customizado nativo por CSS para modo recolhido */
+        .sidebar-collapsed .nav-item-link {
+            position: relative;
+        }
+
+        .sidebar-collapsed .nav-item-link::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 80px;
+            top: 50%;
+            transform: translateY(-50%) scale(0.95);
+            background-color: #0f172a;
+            color: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 150ms ease-in-out;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+        }
+
+        .sidebar-collapsed .nav-item-link:hover::after {
+            opacity: 1;
+            transform: translateY(-50%) scale(1);
+        }
+
+        /* Efeito Glassmorphism da Sidebar */
+        .sidebar-glass {
+            background: rgba(9, 13, 26, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(6, 182, 212, 0.15);
+        }
+
+
+        /* Medidor de saúde estilo velocímetro / meia-lua
+           Mantém a estrutura dos cards e altera apenas o visual da Saúde da Infra. */
+        .health-gauge {
+            position: relative;
+            width: 100%;
+            height: 108px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -2px;
+            margin-bottom: -4px;
+            overflow: hidden;
+        }
+
+        .health-gauge svg {
+            width: 168px;
+            height: 108px;
+            overflow: visible;
+        }
+
+        .health-gauge-track {
+            fill: none;
+            stroke: rgba(241, 245, 249, 0.92);
+            stroke-width: 16;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 6px rgba(255,255,255,0.08));
+        }
+
+        .health-gauge-progress {
+            fill: none;
+            stroke-width: 16;
+            stroke-linecap: round;
+            stroke-dasharray: 251.3;
+            stroke-dashoffset: 251.3;
+            animation: healthGaugeFill 900ms ease-out forwards;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+
+        .health-gauge-progress.critical { color: #f43f5e; stroke: #f43f5e; }
+        .health-gauge-progress.warning { color: #f59e0b; stroke: #f59e0b; }
+        .health-gauge-progress.healthy { color: #10b981; stroke: #10b981; }
+
+        .health-gauge-center {
+            position: absolute;
+            left: 50%;
+            top: 68%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .health-gauge-center .health-label {
+            display: block;
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .health-gauge-center .health-value {
+            display: block;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 22px;
+            font-weight: 800;
+            color: #f8fafc;
+        }
+
+        .health-gauge-center .health-status {
+            display: block;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        @keyframes healthGaugeFill {
+            to { stroke-dashoffset: var(--gauge-offset); }
+        }
+    </style>
+</head>
+<body class="text-slate-200 overflow-x-hidden">
+
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 opacity-0 pointer-events-none transition-opacity duration-300 xl:hidden"></div>
+
+    <div class="flex min-h-screen">
+
+        <aside id="sidebar" class="sidebar-transition sidebar-glass w-64 flex flex-col fixed h-full z-40 left-0 top-0 overflow-hidden">
+
+            <div class="p-5 border-b border-slate-800/60 flex items-center justify-between min-w-[256px]">
+                <div class="flex items-center gap-3">
+                    <div class="bg-cyan-500/10 p-2 rounded-lg border border-cyan-500/30 text-cyan-400 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-shield-halved text-xl"></i>
+                    </div>
+                    <div class="sidebar-text-element transition-opacity duration-200">
+                        <h1 class="font-bold tracking-wider text-lg text-white">ControlCam</h1>
+                        <span class="text-xs text-cyan-400 font-mono tracking-widest uppercase">NOC Platform</span>
+                    </div>
+                </div>
+                <button id="btn-toggle-sidebar" class="hidden xl:flex text-slate-400 hover:text-cyan-400 p-1.5 rounded bg-slate-800/40 hover:bg-slate-800 border border-slate-700/50 cursor-pointer transition-colors" title="Recolher Menu">
+                    <i id="toggle-icon" class="fa-solid fa-angle-left"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden select-none">
+
+                <a href="#" data-tooltip="Dashboard" class="nav-item-link flex items-center gap-3 px-4 py-2.5 bg-cyan-500/10 border-l-2 border-cyan-500 text-cyan-400 rounded-r-md text-sm font-medium transition-all group relative">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <span class="absolute right-3 w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] sidebar-text-element"></span>
+                    <span class="sidebar-text-element transition-opacity duration-200">Dashboard</span>
+                </a>
+
+                <a href="#" data-tooltip="Condomínios" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">Condomínios</span>
+                </a>
+
+                <a href="#" data-tooltip="Dispositivos" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">Dispositivos</span>
+                </a>
+
+                <a href="#" data-tooltip="Infraestrutura" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">Infraestrutura</span>
+                </a>
+
+                <a href="#" data-tooltip="CFTV" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-video"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">CFTV</span>
+                </a>
+
+                <a href="#" data-tooltip="Controle de Acesso" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">Controle de Acesso</span>
+                </a>
+
+                <a href="#" data-tooltip="SSH Manager" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center font-mono transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-terminal"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">SSH Manager</span>
+                </a>
+
+                <div class="sidebar-section-divider pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider block min-w-[200px]">Monitoramento</div>
+
+                <a href="#" data-tooltip="Alertas" class="nav-item-link flex items-center justify-between px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <span class="flex items-center gap-3">
+                        <div class="w-5 flex justify-center text-center">
+                            <i class="fa-solid fa-bell text-red-400 animate-pulse"></i>
+                        </div>
+                        <span class="sidebar-text-element transition-opacity duration-200">Alertas</span>
+                    </span>
+                    <span class="bg-red-500/20 text-red-400 text-xs px-2 py-0.5 rounded-full font-mono border border-red-500/30 sidebar-text-element">14</span>
+                </a>
+
+                <a href="#" data-tooltip="Eventos" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">Eventos</span>
+                </a>
+
+                <a href="#" data-tooltip="Métricas" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-wave-square"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">Métricas</span>
+                </a>
+
+                <div class="sidebar-section-divider pt-4 pb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider block min-w-[200px]">Sistema</div>
+
+                <a href="#" data-tooltip="Usuários" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">Usuários</span>
+                </a>
+
+                <a href="#" data-tooltip="Configurações" class="nav-item-link flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 border-l-2 border-transparent hover:border-cyan-500/40 rounded-r-md text-sm font-medium transition-all group">
+                    <div class="w-5 flex justify-center text-center transition-transform duration-200 group-hover:scale-110">
+                        <i class="fa-solid fa-gear"></i>
+                    </div>
+                    <span class="sidebar-text-element transition-opacity duration-200">Configurações</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800/60 bg-[#050812]/90 flex items-center gap-3 min-w-[256px]">
+                <div class="relative shrink-0">
+                    <div class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-200 font-bold border border-slate-700 select-none">
+                        OP
+                    </div>
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#050812] rounded-full"></span>
+                </div>
+                <div class="overflow-hidden sidebar-text-element transition-opacity duration-200">
+                    <p class="text-xs font-medium text-slate-300 truncate">Operador_NOC_02</p>
+                    <p class="text-[10px] font-mono text-emerald-400 tracking-wider">ONLINE</p>
+                </div>
+            </div>
+        </aside>
+
+        <main id="main-content" class="flex-1 main-content-transition xl:pl-64 min-h-screen flex flex-col w-full">
+
+            <header class="h-16 border-b border-slate-800/80 bg-[#090d1a]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button id="btn-hamburger" class="text-slate-300 hover:text-cyan-400 text-lg p-2 rounded hover:bg-slate-800/60 focus:outline-none cursor-pointer transition-colors" title="Menu Principal">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <h2 class="text-xs sm:text-sm font-mono tracking-wider text-slate-400 uppercase hidden sm:block">Visão Geral / Centro de Operações de Rede</h2>
+                    <div class="flex items-center gap-2 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded text-xs text-emerald-400 font-mono">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span class="hidden xs:inline">SISTEMA OPERACIONAL ESTÁVEL</span>
+                        <span class="xs:hidden">ESTÁVEL</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded text-xs font-medium border border-slate-700 flex items-center gap-2 transition-all cursor-pointer">
+                        <i class="fa-solid fa-rotate text-slate-400"></i> <span class="hidden md:inline">Atualizar (30s)</span>
+                    </button>
+                    <button class="relative bg-slate-800 hover:bg-slate-700 text-slate-300 p-1.5 rounded text-sm border border-slate-700 transition-all cursor-pointer">
+                        <i class="fa-solid fa-bell text-red-400"></i>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-slate-800"></span>
+                    </button>
+                    <button class="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 shadow-lg shadow-cyan-600/10 transition-all cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Novo Condomínio</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-4 sm:p-6 space-y-6 flex-1">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+
+                    <div class="bg-[#0b1224]/60 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between backdrop-blur-sm transition-all hover:border-slate-700">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Condomínios</p>
+                            <h3 class="text-2xl font-bold text-white mt-1 font-mono">20</h3>
+                        </div>
+                        <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50 text-slate-300">
+                            <i class="fa-solid fa-building text-lg"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#0b1224]/60 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between backdrop-blur-sm transition-all hover:border-slate-700">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Dispositivos</p>
+                            <h3 class="text-2xl font-bold text-white mt-1 font-mono">742</h3>
+                        </div>
+                        <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50 text-slate-300">
+                            <i class="fa-solid fa-microchip text-lg"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#0b1224]/60 border border-emerald-950 rounded-xl p-4 flex items-center justify-between backdrop-blur-sm transition-all hover:border-emerald-900 glow-green">
+                        <div>
+                            <p class="text-xs font-medium text-emerald-400 uppercase tracking-wider">Dispositivos Online</p>
+                            <h3 class="text-2xl font-bold text-emerald-400 mt-1 font-mono">728</h3>
+                        </div>
+                        <div class="bg-emerald-950/40 p-3 rounded-lg border border-emerald-500/20 text-emerald-400">
+                            <i class="fa-solid fa-circle-check text-lg"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#0b1224]/60 border border-rose-950 rounded-xl p-4 flex items-center justify-between backdrop-blur-sm transition-all hover:border-rose-900 glow-red">
+                        <div>
+                            <p class="text-xs font-medium text-rose-400 uppercase tracking-wider">Dispositivos Offline</p>
+                            <h3 class="text-2xl font-bold text-rose-500 mt-1 font-mono">14</h3>
+                        </div>
+                        <div class="bg-rose-950/40 p-3 rounded-lg border border-rose-500/20 text-rose-400">
+                            <i class="fa-solid fa-circle-exclamation text-lg animate-pulse"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#0b1224]/60 border border-amber-950 rounded-xl p-4 flex items-center justify-between backdrop-blur-sm transition-all hover:border-amber-900 glow-yellow">
+                        <div>
+                            <p class="text-xs font-medium text-amber-400 uppercase tracking-wider">Alertas Críticos</p>
+                            <h3 class="text-2xl font-bold text-amber-500 mt-1 font-mono">05</h3>
+                        </div>
+                        <div class="bg-amber-950/40 p-3 rounded-lg border border-amber-500/20 text-amber-400">
+                            <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#0b1224]/60 border border-cyan-950 rounded-xl p-4 flex items-center justify-between backdrop-blur-sm transition-all hover:border-cyan-900">
+                        <div>
+                            <p class="text-xs font-medium text-cyan-400 uppercase tracking-wider">Conexões SSH</p>
+                            <h3 class="text-2xl font-bold text-cyan-400 mt-1 font-mono">03</h3>
+                        </div>
+                        <div class="bg-cyan-950/40 p-3 rounded-lg border border-cyan-500/20 text-cyan-400">
+                            <i class="fa-solid fa-terminal text-lg font-mono"></i>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-network-wired text-cyan-400"></i>
+                        <h3 class="text-base font-semibold text-white">Grid Operacional de Monitoramento</h3>
+                        <span class="text-xs text-slate-500 font-mono hidden sm:inline">(Atualização em tempo real)</span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="relative mr-2 w-full sm:w-auto">
+                            <input type="text" placeholder="Filtrar condomínio..." class="bg-[#090d1a] border border-slate-800 text-xs text-slate-300 pl-8 pr-3 py-1.5 rounded-md focus:outline-none focus:border-cyan-500/50 w-full sm:w-48 transition-all">
+                            <i class="fa-solid fa-magnifying-glass text-slate-500 text-[11px] absolute left-2.5 top-2.5"></i>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <button class="bg-slate-800/80 border border-cyan-500/40 text-cyan-400 text-xs px-3 py-1.5 rounded font-medium cursor-pointer">Todos (20)</button>
+                            <button class="bg-slate-900 text-slate-400 hover:text-rose-400 text-xs px-3 py-1.5 rounded font-medium border border-slate-800 transition-all cursor-pointer">Críticos (2)</button>
+                            <button class="bg-slate-900 text-slate-400 hover:text-amber-400 text-xs px-3 py-1.5 rounded font-medium border border-slate-800 transition-all cursor-pointer">Atenção (3)</button>
+                            <button class="bg-slate-900 text-slate-400 hover:text-emerald-400 text-xs px-3 py-1.5 rounded font-medium border border-slate-800 transition-all cursor-pointer">Saudáveis (15)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+
+                    <div class="bg-[#090d1a]/90 border border-rose-500/30 rounded-xl overflow-hidden flex flex-col glow-red">
+                        <div class="p-4 border-b border-slate-800/60 bg-gradient-to-r from-rose-950/20 to-transparent flex items-center justify-between">
+                            <h4 class="font-bold text-white text-sm truncate">Residencial Alvorada Park</h4>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/20 border border-rose-500/30 text-rose-400">CRÍTICO</span>
+                        </div>
+                        <div class="p-4 flex-1 space-y-3">
+                            <div class="health-gauge" aria-label="Saúde da Infra 68% Crítico">
+                                <svg viewBox="0 0 220 130" role="img">
+                                    <path class="health-gauge-track" d="M 30 110 A 80 80 0 0 1 190 110"></path>
+                                    <path class="health-gauge-progress critical" style="--gauge-offset: 80.42;" d="M 30 110 A 80 80 0 0 1 190 110"></path>
+                                </svg>
+                                <div class="health-gauge-center">
+                                    <span class="health-label">Saúde</span>
+                                    <span class="health-value text-rose-500">68%</span>
+                                    <span class="health-status text-rose-500">Crítico</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div class="bg-slate-900/60 p-2 rounded border border-slate-800/60">
+                                    <p class="text-slate-500 text-[10px] uppercase">Ativos</p>
+                                    <p class="font-mono font-medium text-slate-300 mt-0.5"><i class="fa-solid fa-microchip text-slate-500 text-[10px] mr-1"></i> 38 Disp.</p>
+                                </div>
+                                <div class="bg-slate-900/60 p-2 rounded border border-slate-800/60">
+                                    <p class="text-slate-500 text-[10px] uppercase">Rede / Link</p>
+                                    <p class="font-mono font-medium text-rose-400 mt-0.5"><i class="fa-solid fa-circle-down text-rose-500 text-[10px] mr-1"></i> 3 Offline</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs font-mono pt-1">
+                                <span class="text-slate-500">Latência: <strong class="text-rose-450">148ms</strong></span>
+                                <span class="text-slate-500">Alertas: <strong class="text-rose-500">02</strong></span>
+                            </div>
+                            <div class="bg-rose-950/10 border border-rose-500/10 p-2 rounded text-[11px] text-rose-400/90 flex items-start gap-1.5">
+                                <i class="fa-solid fa-triangle-exclamation mt-0.5 text-xs text-rose-500"></i>
+                                <p class="truncate"><span class="font-semibold">[CORE-SW]</span> Switch Central Offline</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-5 border-t border-slate-800/80 bg-[#050812] text-slate-400 text-center text-xs">
+                            <button title="Entrar" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-right-to-bracket"></i></button>
+                            <button title="Dispositivos" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-network-wired"></i></button>
+                            <button title="SSH" class="py-2 hover:bg-slate-800 hover:text-cyan-400 transition-all border-r border-slate-800/60 font-mono text-[10px] font-bold">SSH</button>
+                            <button title="CFTV" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-video"></i></button>
+                            <button title="Métricas" class="py-2 hover:bg-slate-800 hover:text-white transition-all"><i class="fa-solid fa-chart-line"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#090d1a]/90 border border-amber-500/30 rounded-xl overflow-hidden flex flex-col glow-yellow">
+                        <div class="p-4 border-b border-slate-800/60 bg-gradient-to-r from-amber-950/20 to-transparent flex items-center justify-between">
+                            <h4 class="font-bold text-white text-sm truncate">Horizon Sky Residence</h4>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/20 border border-amber-500/30 text-amber-400">ATENÇÃO</span>
+                        </div>
+                        <div class="p-4 flex-1 space-y-3">
+                            <div class="health-gauge" aria-label="Saúde da Infra 89% Atenção">
+                                <svg viewBox="0 0 220 130" role="img">
+                                    <path class="health-gauge-track" d="M 30 110 A 80 80 0 0 1 190 110"></path>
+                                    <path class="health-gauge-progress warning" style="--gauge-offset: 27.64;" d="M 30 110 A 80 80 0 0 1 190 110"></path>
+                                </svg>
+                                <div class="health-gauge-center">
+                                    <span class="health-label">Saúde</span>
+                                    <span class="health-value text-amber-500">89%</span>
+                                    <span class="health-status text-amber-500">Atenção</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                <div class="bg-slate-900/60 p-2 rounded border border-slate-800/60">
+                                    <p class="text-slate-500 text-[10px] uppercase">Ativos</p>
+                                    <p class="font-mono font-medium text-slate-300 mt-0.5"><i class="fa-solid fa-microchip text-slate-500 text-[10px] mr-1"></i> 54 Disp.</p>
+                                </div>
+                                <div class="bg-slate-900/60 p-2 rounded border border-slate-800/60">
+                                    <p class="text-slate-500 text-[10px] uppercase">Rede / Link</p>
+                                    <p class="font-mono font-medium text-amber-400 mt-0.5"><i class="fa-solid fa-circle-down text-amber-500 text-[10px] mr-1"></i> 1 Offline</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs font-mono pt-1">
+                                <span class="text-slate-500">Latência: <strong class="text-amber-500">42ms</strong></span>
+                                <span class="text-slate-500">Alertas: <strong class="text-amber-500">01</strong></span>
+                            </div>
+                            <div class="bg-amber-950/10 border border-amber-500/10 p-2 rounded text-[11px] text-amber-400/90 flex items-start gap-1.5">
+                                <i class="fa-solid fa-circle-exclamation mt-0.5 text-xs text-amber-500"></i>
+                                <p class="truncate"><span class="font-semibold">[CAM-Z3-04]</span> Perda de quadros constante</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-5 border-t border-slate-800/80 bg-[#050812] text-slate-400 text-center text-xs">
+                            <button title="Entrar" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-right-to-bracket"></i></button>
+                            <button title="Dispositivos" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-network-wired"></i></button>
+                            <button title="SSH" class="py-2 hover:bg-slate-800 hover:text-cyan-400 transition-all border-r border-slate-800/60 font-mono text-[10px] font-bold">SSH</button>
+                            <button title="CFTV" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-video"></i></button>
+                            <button title="Métricas" class="py-2 hover:bg-slate-800 hover:text-white transition-all"><i class="fa-solid fa-chart-line"></i></button>
+                        </div>
+                    </div>
+
+                    <script>
+                        const condominios = [
+                            { nome: "Ville de France Concept", disp: 42, lat: "12ms" },
+                            { nome: "Condomínio Golden Gate", disp: 61, lat: "15ms" },
+                            { nome: "Residencial Quinta da Boa Vista", disp: 29, lat: "08ms" },
+                            { nome: "Solar das Orquídeas", disp: 24, lat: "19ms" },
+                            { nome: "Greenwood Forest Club", disp: 85, lat: "22ms" },
+                            { nome: "Palazzo di San Marco", disp: 33, lat: "11ms" },
+                            { nome: "Condomínio Alphaville Eco", disp: 112, lat: "25ms" },
+                            { nome: "Bella Vista Premium", disp: 47, lat: "14ms" },
+                            { nome: "Spazio Campo di Fiori", disp: 19, lat: "07ms" },
+                            { nome: "Metropolitan Towers", disp: 93, lat: "18ms" },
+                            { nome: "Residencial Jardins de Monet", disp: 56, lat: "13ms" },
+                            { nome: "Splendour Da Vinci", disp: 31, lat: "16ms" },
+                            { nome: "Royal Park Residence", disp: 74, font: "21ms", lat: "21ms" },
+                            { nome: "Portal dos Nobres", disp: 40, lat: "10ms" },
+                            { nome: "Infinity Ocean View", disp: 66, lat: "29ms" },
+                            { nome: "Vila Veneto Village", disp: 22, lat: "12ms" },
+                            { nome: "Acqua Marina Resort", disp: 104, lat: "24ms" },
+                            { nome: "Parque das Fontes", disp: 37, lat: "09ms" }
+                        ];
+
+                        condominios.forEach(c => {
+                            document.write(`
+                                <div class="bg-[#090d1a]/90 border border-slate-800/80 rounded-xl overflow-hidden flex flex-col hover:border-emerald-500/30 transition-all duration-300">
+                                    <div class="p-4 border-b border-slate-800/60 flex items-center justify-between">
+                                        <h4 class="font-bold text-slate-200 text-sm truncate" title="${c.nome}">${c.nome}</h4>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">SAUDÁVEL</span>
+                                    </div>
+                                    <div class="p-4 flex-1 space-y-3">
+                                        <div class="health-gauge" aria-label="Saúde da Infra 100% Saudável">
+                                            <svg viewBox="0 0 220 130" role="img">
+                                                <path class="health-gauge-track" d="M 30 110 A 80 80 0 0 1 190 110"></path>
+                                                <path class="health-gauge-progress healthy" style="--gauge-offset: 0;" d="M 30 110 A 80 80 0 0 1 190 110"></path>
+                                            </svg>
+                                            <div class="health-gauge-center">
+                                                <span class="health-label">Saúde</span>
+                                                <span class="health-value text-emerald-400">100%</span>
+                                                <span class="health-status text-emerald-400">Saudável</span>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                                            <div class="bg-slate-900/60 p-2 rounded border border-slate-800/60">
+                                                <p class="text-slate-500 text-[10px] uppercase">Ativos</p>
+                                                <p class="font-mono font-medium text-slate-300 mt-0.5"><i class="fa-solid fa-microchip text-slate-600 text-[10px] mr-1"></i> ${c.disp} Disp.</p>
+                                            </div>
+                                            <div class="bg-slate-900/60 p-2 rounded border border-slate-800/60">
+                                                <p class="text-slate-500 text-[10px] uppercase">Rede / Link</p>
+                                                <p class="font-mono font-medium text-emerald-400 mt-0.5"><i class="fa-solid fa-circle text-emerald-500 text-[8px] mr-1"></i> 0 Offline</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs font-mono pt-1">
+                                            <span class="text-slate-500">Latência: <strong class="text-emerald-400">${c.lat}</strong></span>
+                                            <span class="text-slate-500">Alertas: <strong class="text-slate-600">00</strong></span>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-5 border-t border-slate-800/80 bg-[#050812] text-slate-400 text-center text-xs">
+                                        <button title="Entrar" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-right-to-bracket"></i></button>
+                                        <button title="Dispositivos" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-network-wired"></i></button>
+                                        <button title="SSH" class="py-2 hover:bg-slate-800 hover:text-cyan-400 transition-all border-r border-slate-800/60 font-mono text-[10px] font-bold">SSH</button>
+                                        <button title="CFTV" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60"><i class="fa-solid fa-video"></i></button>
+                                        <button title="Métricas" class="py-2 hover:bg-slate-800 hover:text-white transition-all"><i class="fa-solid fa-chart-line"></i></button>
+                                    </div>
+                                </div>
+                            `);
+                        });
+                    </script>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+        const btnHamburger = document.getElementById('btn-hamburger');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        // Elementos textuais internos que sofrem fade out rápido ao encolher
+        const textElements = document.querySelectorAll('.sidebar-text-element');
+        const sectionDividers = document.querySelectorAll('.sidebar-section-divider');
+
+        // Estados de Controle da Sidebar: 'expanded' | 'collapsed' | 'hidden'
+        let currentMode = 'expanded';
+
+        function initSidebarResponsive() {
+            const width = window.innerWidth;
+
+            if (width >= 1280) { // Desktops
+                sidebarBackdrop.classList.add('opacity-0', 'pointer-events-none');
+                if (localStorage.getItem('sidebarPref') === 'collapsed') {
+                    setCollapsedMode();
+                } else {
+                    setExpandedMode();
+                }
+            } else if (width >= 768 && width < 1280) { // Notebooks / Tablets
+                sidebarBackdrop.classList.add('opacity-0', 'pointer-events-none');
+                setCollapsedMode();
+            } else { // Mobile
+                setHiddenMode();
+            }
+        }
+
+        function setExpandedMode() {
+            currentMode = 'expanded';
+            sidebar.classList.remove('sidebar-collapsed');
+
+            // Gerencia classes de largura e transform do Tailwind
+            sidebar.classList.remove('w-[70px]', '-translate-x-full');
+            sidebar.classList.add('w-64', 'translate-x-0');
+
+            // Adaptação de espaço do conteúdo principal
+            if (window.innerWidth >= 1280) {
+                mainContent.classList.remove('xl:pl-[70px]', 'xl:pl-0');
+                mainContent.classList.add('xl:pl-64');
+            }
+
+            // Retorna textos e separadores visíveis
+            setTimeout(() => {
+                if (currentMode === 'expanded') {
+                    textElements.forEach(el => el.classList.remove('opacity-0', 'invisible'));
+                    sectionDividers.forEach(el => el.classList.remove('hidden'));
+                }
+            }, 100);
+
+            if(toggleIcon) {
+                toggleIcon.className = 'fa-solid fa-angle-left';
+            }
+        }
+
+        function setCollapsedMode() {
+            currentMode = 'collapsed';
+
+            // Oculta textos imediatamente para evitar overflow visual na animação
+            textElements.forEach(el => el.classList.add('opacity-0', 'invisible'));
+            sectionDividers.forEach(el => el.classList.add('hidden'));
+
+            sidebar.classList.add('sidebar-collapsed');
+            sidebar.classList.remove('w-64', '-translate-x-full');
+            sidebar.classList.add('w-[70px]', 'translate-x-0');
+
+            if (window.innerWidth >= 1280) {
+                mainContent.classList.remove('xl:pl-64', 'xl:pl-0');
+                mainContent.classList.add('xl:pl-[70px]');
+            } else {
+                mainContent.classList.remove('xl:pl-64', 'xl:pl-[70px]');
+            }
+
+            if(toggleIcon) {
+                toggleIcon.className = 'fa-solid fa-angle-right';
+            }
+            localStorage.setItem('sidebarPref', 'collapsed');
+        }
+
+        function setHiddenMode() {
+            currentMode = 'hidden';
+            sidebar.classList.remove('w-[70px]', 'w-64', 'sidebar-collapsed');
+            sidebar.classList.add('-translate-x-full');
+            mainContent.classList.remove('xl:pl-64', 'xl:pl-[70px]');
+
+            sidebarBackdrop.classList.remove('opacity-100', 'pointer-events-auto');
+            sidebarBackdrop.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function toggleSidebar() {
+            const width = window.innerWidth;
+
+            if (width >= 1280) {
+                if (currentMode === 'expanded') {
+                    setCollapsedMode();
+                    localStorage.setItem('sidebarPref', 'collapsed');
+                } else {
+                    setExpandedMode();
+                    localStorage.setItem('sidebarPref', 'expanded');
+                }
+            } else {
+                // Modo Overlay (Telas < 1280px)
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('w-64', 'translate-x-0');
+                    textElements.forEach(el => el.classList.remove('opacity-0', 'invisible'));
+                    sectionDividers.forEach(el => el.classList.remove('hidden'));
+
+                    sidebarBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+                    sidebarBackdrop.classList.add('opacity-100', 'pointer-events-auto');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebarBackdrop.classList.remove('opacity-100', 'pointer-events-auto');
+                    sidebarBackdrop.classList.add('opacity-0', 'pointer-events-none');
+                }
+            }
+        }
+
+        // Event Listeners Mapeados
+        btnToggleSidebar.addEventListener('click', toggleSidebar);
+        btnHamburger.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', () => {
+            if (window.innerWidth < 1280) setHiddenMode();
+        });
+
+        // Monitora redimensionamento de janela sem provocar gargalos de processamento (Debounce simples)
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                initSidebarResponsive();
+            }, 100);
+        });
+
+        // Inicialização Estrutural do Dashboard
+        initSidebarResponsive();
+    </script>
+</body>
+</html>

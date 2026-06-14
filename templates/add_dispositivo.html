@@ -1,10 +1,452 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ControlCam NOC - Novo Dispositivo</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #04060d;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #070a14;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        /* Input custom focus glow */
+        .input-focus:focus {
+            outline: none;
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 10px -2px rgba(6, 182, 212, 0.2);
+        }
+
+        /* Custom checkbox alignment */
+        .custom-checkbox:checked {
+            background-color: #06b6d4;
+            border-color: #06b6d4;
+        }
+    </style>
 </head>
-<body>
+
+<body class="text-slate-200 antialiased selection:bg-cyan-500/30 min-h-screen overflow-y-auto">
+
+<header class="bg-[#070a14]/90 border-b border-slate-800/80 backdrop-blur-md sticky top-0 z-50 px-6 py-3 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-4">
+        <a href="{{ url_for('main.dispositivos') }}"
+            class="bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white px-3 py-1.5 rounded-md border border-slate-800 transition-all text-xs flex items-center gap-2 cursor-pointer no-underline">
+            <i class="fa-solid fa-arrow-left"></i>
+            Cancelar
+        </a>
+        <div class="h-6 w-px bg-slate-800"></div>
+        <div>
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-gear text-cyan-400 text-sm"></i>
+                <h1 class="text-base font-bold tracking-tight text-white">
+                    Adicionar Novo Dispositivo
+                </h1>
+            </div>
+            <p class="text-[11px] text-slate-500 font-mono mt-0.5">
+                <span class="text-slate-400">Cadastro Manual de Ativo</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+        <button type="submit" form="form-dispositivo" class="bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-400 px-4 py-2 rounded-md border border-cyan-500/30 transition-all text-xs font-mono font-bold flex items-center gap-2 cursor-pointer shadow-lg shadow-cyan-950/20">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Cadastrar Dispositivo
+        </button>
+    </div>
+</header>
+
+<main class="p-6 max-w-4xl mx-auto pb-24">
+
+    <form id="form-dispositivo" action="{{ url_for('main.add_dispositivo') }}" method="POST">
+        
+        <div class="bg-[#090d16]/90 border border-slate-800/80 rounded-xl p-5 space-y-4 mb-6">
+            <div class="flex items-center gap-2 border-b border-slate-800/60 pb-2">
+                <i class="fa-solid fa-network-wired text-cyan-400 text-xs"></i>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Identificação & Rede</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-1 space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Nome do Dispositivo</label>
+                    <input type="text" name="nome" value="" placeholder="Ex: camera-portaria" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-white font-mono input-focus">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Categoria</label>
+                    <div class="relative">
+                        <select name="categoria" id="select-categoria" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-white font-mono input-focus appearance-none cursor-pointer">
+                            <option value="infraestrutura">Infraestrutura Principal</option>
+                            <option value="rede">Equipamentos de Rede</option>
+                            <option value="wireless">Rede Wireless</option>
+                            <option value="computadores">Computadores e Notebooks</option>
+                            <option value="impressoras">Impressoras</option>
+                            <option value="controle_acesso">Controle de Acesso</option>
+                            <option value="cftv" selected>Sistema de Segurança e Monitoramento CFTV</option>
+                            <option value="telefonia">Telefonia IP</option>
+                            <option value="iot">IoT e Automação</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-slate-500 text-[10px] pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Tipo do Dispositivo</label>
+                    <div class="relative">
+                        <select name="tipo_dispositivo" id="select-tipo" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-white font-mono input-focus appearance-none cursor-pointer">
+                            <optgroup label="INFRAESTRUTURA">
+                                <option value="link_principal">Link Principal</option>
+                                <option value="link_secundario">Link Secundário</option>
+                                <option value="firewall">Firewall</option>
+                                <option value="load_balance">Load Balance</option>
+                                <option value="servidor">Servidor</option>
+                                <option value="nas">NAS</option>
+                                <option value="hypervisor">Hypervisor</option>
+                            </optgroup>
+                            <optgroup label="REDE">
+                                <option value="switch">Switch</option>
+                                <option value="switch_l3">Switch Layer 3</option>
+                                <option value="switch_poe">Switch PoE</option>
+                            </optgroup>
+                            <optgroup label="WIRELESS">
+                                <option value="access_point">Access Point</option>
+                                <option value="radio_ptp">Rádio PTP</option>
+                                <option value="radio_ptmp">Rádio PTMP</option>
+                                <option value="controladora_wireless">Controladora Wireless</option>
+                            </optgroup>
+                            <optgroup label="COMPUTADORES">
+                                <option value="desktop">Desktop</option>
+                                <option value="notebook">Notebook</option>
+                                <option value="mini_pc">Mini PC</option>
+                                <option value="thin_client">Thin Client</option>
+                            </optgroup>
+                            <optgroup label="IMPRESSORAS">
+                                <option value="impressora">Impressora</option>
+                                <option value="multifuncional">Multifuncional</option>
+                                <option value="impressora_termica">Impressora Térmica</option>
+                            </optgroup>
+                            <optgroup label="CONTROLE DE ACESSO">
+                                <option value="facial">Facial</option>
+                                <option value="controladora">Controladora</option>
+                                <option value="catraca">Catraca</option>
+                                <option value="cancela">Cancela</option>
+                                <option value="fechadura_ip">Fechadura IP</option>
+                            </optgroup>
+                            <optgroup label="CFTV">
+                                <option value="camera_ip" selected>Câmera IP</option>
+                                <option value="nvr">NVR</option>
+                                <option value="dvr">DVR</option>
+                                <option value="servidor_vms">Servidor VMS</option>
+                            </optgroup>
+                            <optgroup label="TELEFONIA">
+                                <option value="pabx_ip">PABX IP</option>
+                                <option value="telefone_ip">Telefone IP</option>
+                                <option value="gateway_voip">Gateway VoIP</option>
+                            </optgroup>
+                            <optgroup label="IOT">
+                                <option value="sensor">Sensor</option>
+                                <option value="controlador">Controlador</option>
+                                <option value="medidor">Medidor</option>
+                                <option value="automacao">Automação</option>
+                            </optgroup>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-slate-500 text-[10px] pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Endereço IP</label>
+                    <input type="text" name="ip" value="" placeholder="Ex: 172.168.0.234" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-cyan-400 font-mono input-focus">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Hostname</label>
+                    <input type="text" name="hostname" value="" placeholder="Ex: sw-core-01" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-[#090d16]/90 border border-slate-800/80 rounded-xl p-5 space-y-4 mb-6">
+            <div class="flex items-center gap-2 border-b border-slate-800/60 pb-2">
+                <i class="fa-solid fa-boxes-stacked text-cyan-400 text-xs"></i>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Especificações & Infraestrutura</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Fabricante</label>
+                    <div class="relative">
+                        <select name="fabricante" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-white font-mono input-focus appearance-none cursor-pointer">
+                            <option value="" selected>Selecione o fabricante...</option>
+                            <option value="Hikvision">Hikvision</option>
+                            <option value="Intelbras">Intelbras</option>
+                            <option value="Control iD">Control iD</option>
+                            <option value="Ubiquiti">Ubiquiti</option>
+                            <option value="Mikrotik">Mikrotik</option>
+                            <option value="TP-Link">TP-Link</option>
+                            <option value="Cisco">Cisco</option>
+                            <option value="Dell">Dell</option>
+                            <option value="HP">HP</option>
+                            <option value="Lenovo">Lenovo</option>
+                            <option value="Dahua">Dahua</option>
+                            <option value="Grandstream">Grandstream</option>
+                            <option value="Yealink">Yealink</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-slate-500 text-[10px] pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Modelo</label>
+                    <input type="text" name="modelo" value="" placeholder="Ex: DS-2CD1143G0-I" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Localização Física</label>
+                    <input type="text" name="localizacao" value="" placeholder="Ex: Portaria Bloco A" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Endereço Físico (Cabeamento/Patch)</label>
+                    <input type="text" name="endereco_fisico" value="" placeholder="Ex: Rack 02 / Switch 01" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-[#090d16]/90 border border-slate-800/80 rounded-xl p-5 space-y-4 mb-6">
+            <div class="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-cyan-400 text-xs"></i>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Credenciais e Acessos</h2>
+                </div>
+                <button type="button" class="bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-400 border border-cyan-500/30 font-mono text-[10px] px-2 py-1 rounded transition-all cursor-pointer">
+                    <i class="fa-solid fa-bolt mr-1"></i> Testar Acesso
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Usuário Web</label>
+                    <input type="text" name="usuario_web" value="" placeholder="admin" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Senha Web</label>
+                    <input type="password" name="senha_web" value="" placeholder="••••••••" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus tracking-widest">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Usuário SSH</label>
+                    <input type="text" name="usuario_ssh" value="" placeholder="root" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Senha SSH</label>
+                    <input type="password" name="senha_ssh" value="" placeholder="••••••••" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus tracking-widest">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Usuário SNMP</label>
+                    <input type="text" name="usuario_snmp" value="" placeholder="snmpuser" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Community SNMP</label>
+                    <input type="text" name="community_snmp" value="" placeholder="public" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Usuário ONVIF</label>
+                    <input type="text" name="usuario_onvif" value="" placeholder="admin" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Senha ONVIF</label>
+                    <input type="password" name="senha_onvif" value="" placeholder="••••••••" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus tracking-widest">
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-[#090d16]/90 border border-slate-800/80 rounded-xl p-5 space-y-4">
+                <div class="flex items-center gap-2 border-b border-slate-800/60 pb-2">
+                    <i class="fa-solid fa-layer-group text-cyan-400 text-xs"></i>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Protocolos Suportados</h2>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 pt-1 max-h-[190px] overflow-y-auto pr-1">
+                    {% set protos = ['Ping ICMP', 'HTTP', 'HTTPS', 'SSH', 'Telnet', 'SNMP', 'ONVIF', 'RTSP', 'RTMP', 'FTP', 'SFTP', 'SMB', 'Modbus TCP', 'MQTT', 'SIP'] %}
+                    {% for proto in protos %}
+                    <label class="flex items-center gap-2 bg-slate-950/40 border border-slate-900 p-2 rounded-lg cursor-pointer hover:border-slate-800 transition-all">
+                        <input type="checkbox" name="protocolos" value="{{ proto | lower }}" {% if proto in ['SSH', 'RTSP', 'SNMP', 'HTTP', 'Ping ICMP'] %}checked{% endif %} class="w-3 h-3 accent-cyan-500 rounded border-slate-800 bg-slate-950">
+                        <span class="text-[10px] font-mono font-medium text-slate-300 truncate">{{ proto }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-[#090d16]/90 border border-slate-800/80 rounded-xl p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800/60 pb-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-door-open text-cyan-400 text-xs"></i>
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Portas Customizadas</h2>
+                    </div>
+                    <button type="button" class="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> Adicionar
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 max-h-[190px] overflow-y-auto pr-1">
+                    <div class="flex items-center bg-slate-950/60 border border-slate-800/80 rounded-lg px-2.5 py-1 justify-between">
+                        <span class="text-[10px] font-mono text-slate-500 font-bold">HTTP</span>
+                        <input type="number" name="porta_http" value="80" class="w-14 bg-transparent text-right text-xs text-slate-200 font-mono focus:outline-none">
+                    </div>
+                    <div class="flex items-center bg-slate-950/60 border border-slate-800/80 rounded-lg px-2.5 py-1 justify-between">
+                        <span class="text-[10px] font-mono text-slate-500 font-bold">HTTPS</span>
+                        <input type="number" name="porta_https" value="443" class="w-14 bg-transparent text-right text-xs text-slate-200 font-mono focus:outline-none">
+                    </div>
+                    <div class="flex items-center bg-slate-950/60 border border-slate-800/80 rounded-lg px-2.5 py-1 justify-between">
+                        <span class="text-[10px] font-mono text-slate-500 font-bold">SSH</span>
+                        <input type="number" name="porta_ssh" value="22" class="w-14 bg-transparent text-right text-xs text-slate-200 font-mono focus:outline-none">
+                    </div>
+                    <div class="flex items-center bg-slate-950/60 border border-slate-800/80 rounded-lg px-2.5 py-1 justify-between">
+                        <span class="text-[10px] font-mono text-slate-500 font-bold">SNMP</span>
+                        <input type="number" name="porta_snmp" value="161" class="w-14 bg-transparent text-right text-xs text-slate-200 font-mono focus:outline-none">
+                    </div>
+                    <div class="flex items-center bg-slate-950/60 border border-slate-800/80 rounded-lg px-2.5 py-1 justify-between">
+                        <span class="text-[10px] font-mono text-slate-500 font-bold">RTSP</span>
+                        <input type="number" name="porta_rtsp" value="554" class="w-14 bg-transparent text-right text-xs text-slate-200 font-mono focus:outline-none">
+                    </div>
+                    <div class="flex items-center bg-slate-950/60 border border-slate-800/80 rounded-lg px-2.5 py-1 justify-between">
+                        <span class="text-[10px] font-mono text-slate-500 font-bold">ONVIF</span>
+                        <input type="number" name="porta_onvif" value="8899" class="w-14 bg-transparent text-right text-xs text-slate-200 font-mono focus:outline-none">
+                    </div>
+                    <div class="flex items-center bg-slate-950/60 border border-slate-800/80 rounded-lg px-2.5 py-1 justify-between">
+                        <span class="text-[10px] font-mono text-slate-500 font-bold">SIP</span>
+                        <input type="number" name="porta_sip" value="5060" class="w-14 bg-transparent text-right text-xs text-slate-200 font-mono focus:outline-none">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-[#090d16]/90 border border-slate-800/80 rounded-xl p-5 space-y-4 mb-6">
+            <div class="flex items-center gap-2 border-b border-slate-800/60 pb-2">
+                <i class="fa-solid fa-warehouse text-cyan-400 text-xs"></i>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Inventário</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Número de Série</label>
+                    <input type="text" name="num_serie" value="" placeholder="Ex: HIK12345678" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Patrimônio</label>
+                    <input type="text" name="patrimonio" value="" placeholder="Ex: PAT-2026-003" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">MAC Address</label>
+                    <input type="text" name="mac" value="" placeholder="00:00:00:00:00:00" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">VLAN</label>
+                    <input type="number" name="vlan_inventario" value="" placeholder="100" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Rack</label>
+                    <input type="text" name="rack" value="" placeholder="Ex: Rack 01" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Unidade</label>
+                    <input type="text" name="unidade" value="" placeholder="Ex: U12" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-mono text-slate-500 uppercase">Andar / Setor</label>
+                    <input type="text" name="andar_setor" value="" placeholder="Ex: 2º Andar" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-[#090d16]/90 border border-slate-800/80 rounded-xl p-5 space-y-4 mb-6">
+            <div class="flex items-center gap-2 border-b border-slate-800/60 pb-2">
+                <i class="fa-solid fa-circle-info text-cyan-400 text-xs"></i>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Monitoramento & Observações</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Intervalo de Check (Ping)</label>
+                    <div class="relative">
+                        <select name="intervalo_check" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-white font-mono input-focus appearance-none cursor-pointer">
+                            <option value="30">30 Segundos</option>
+                            <option value="60" selected>1 Minuto</option>
+                            <option value="300">5 Minutos</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-slate-500 text-[10px] pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Notificações de Alerta</label>
+                    <div class="relative">
+                        <select name="notificacoes" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-white font-mono input-focus appearance-none cursor-pointer">
+                            <option value="todas" selected>Todas as Instabilidades</option>
+                            <option value="criticas">Apenas Offline Crítico</option>
+                            <option value="nenhuma">Desativadas</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-slate-500 text-[10px] pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Documentação / Observações Técnicas</label>
+                <textarea name="observacoes" rows="4" placeholder="Insira detalhes sobre topologia, histórico de manutenção ou observações de acesso do ativo..." class="w-full bg-slate-950/60 border border-slate-800/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono input-focus resize-none"></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" class="w-full md:w-auto bg-cyan-600 hover:bg-cyan-500 text-white px-8 py-3 rounded-lg font-bold text-xs font-mono uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/40 cursor-pointer">
+                <i class="fa-solid fa-plus mr-2"></i> Cadastrar Dispositivo
+            </button>
+        </div>
+
+    </form>
+
+</main>
 
 </body>
 </html>

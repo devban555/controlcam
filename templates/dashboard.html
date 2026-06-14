@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secticom | Central de Condomínios</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #050914;
+            --panel: #07111f;
+            --panel-2: #020617;
+            --border: rgba(51,65,85,.75);
+            --cyan: #22d3ee;
+            --teal: #00b8b4;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --pink: #ec4899;
+            --purple: #7c3aed;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(circle at 20% 0%, rgba(6,182,212,.12), transparent 28%),
+                radial-gradient(circle at 85% 20%, rgba(124,58,237,.10), transparent 26%),
+                var(--bg);
+            color: #e5e7eb;
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        .card {
+            background:
+                linear-gradient(145deg, rgba(15,23,42,.98), rgba(2,6,23,.96));
+            border: 1px solid var(--border);
+            box-shadow:
+                0 18px 40px rgba(0,0,0,.35),
+                inset 0 1px 0 rgba(255,255,255,.03);
+        }
+
+        .sidebar {
+            background:
+                radial-gradient(circle at 30% 0%, rgba(6,182,212,.10), transparent 32%),
+                linear-gradient(180deg, #07111f, #020617);
+            border-right: 1px solid rgba(51,65,85,.7);
+        }
+
+        .nav-active {
+            background: linear-gradient(90deg, rgba(6,182,212,.28), rgba(59,130,246,.12));
+            border-left: 4px solid #06b6d4;
+            color: #22d3ee;
+        }
+
+        .nav-link {
+            color: #cbd5e1;
+            transition: .2s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(30,41,59,.65);
+            color: #fff;
+        }
+
+        .filter {
+            background: rgba(15,23,42,.95);
+            border: 1px solid rgba(51,65,85,.85);
+            border-radius: 12px;
+            padding: 10px 12px;
+            color: #f8fafc;
+            outline: none;
+            width: 100%;
+        }
+
+        .filter:focus {
+            border-color: rgba(34,211,238,.7);
+            box-shadow: 0 0 0 3px rgba(34,211,238,.08);
+        }
+
+        .metric-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22d3ee;
+            background: rgba(6,182,212,.1);
+            border: 1px solid rgba(6,182,212,.25);
+        }
+
+        .chip {
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            border: 1px solid transparent;
+        }
+
+        .chip-ok {
+            color: #34d399;
+            background: rgba(16,185,129,.12);
+            border-color: rgba(16,185,129,.26);
+        }
+
+        .chip-warn {
+            color: #fbbf24;
+            background: rgba(245,158,11,.12);
+            border-color: rgba(245,158,11,.28);
+        }
+
+        .chip-danger {
+            color: #fb7185;
+            background: rgba(239,68,68,.13);
+            border-color: rgba(239,68,68,.30);
+        }
+
+        .chip-info {
+            color: #67e8f9;
+            background: rgba(6,182,212,.12);
+            border-color: rgba(6,182,212,.28);
+        }
+
+        /* Estrutura do medidor preservada */
+        .gauge {
+            width: 100%;
+            height: 170px;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: #f8fafc;
+            stroke-width: 18;
+            stroke-linecap: round;
+            opacity: .95;
+        }
+
+        .gauge-value {
+            fill: none;
+            stroke-width: 18;
+            stroke-linecap: round;
+            stroke-dasharray: 251;
+            animation: dash 900ms ease-out forwards;
+        }
+
+        @keyframes dash {
+            from { stroke-dashoffset: 251; }
+            to { stroke-dashoffset: var(--offset); }
+        }
+
+        .mini-gauge {
+            width: 100%;
+            height: 105px;
+        }
+
+        .mini-gauge-bg {
+            fill: none;
+            stroke: rgba(248,250,252,.95);
+            stroke-width: 14;
+            stroke-linecap: round;
+        }
+
+        .mini-gauge-value {
+            fill: none;
+            stroke-width: 14;
+            stroke-linecap: round;
+            stroke-dasharray: 251;
+            animation: dash 900ms ease-out forwards;
+        }
+
+        .donut {
+            width: 144px;
+            height: 144px;
+            border-radius: 999px;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0,0,0,.25);
+        }
+
+        .donut::after {
+            content: "";
+            position: absolute;
+            inset: 44px;
+            background: #07111f;
+            border-radius: 999px;
+            box-shadow: inset 0 0 18px rgba(0,0,0,.6);
+        }
+
+        .condo-card {
+            transition: .2s ease;
+        }
+
+        .condo-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(34,211,238,.35);
+        }
+
+        .soft-grid {
+            background-image:
+                linear-gradient(rgba(148,163,184,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148,163,184,.04) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="min-h-screen flex">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar w-[260px] fixed left-0 top-0 bottom-0 p-5 hidden xl:flex flex-col">
+
+        <div class="flex items-center gap-3 mb-9">
+            <div class="w-14 h-14 rounded-2xl border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-2xl shadow-[0_0_25px_rgba(34,211,238,.12)]">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-white leading-none">Secticom</h1>
+                <p class="text-xs tracking-[4px] text-cyan-400 mt-1">NOC PLATFORM</p>
+            </div>
+        </div>
+
+        <nav class="space-y-2 text-slate-300">
+            <a class="nav-active flex items-center gap-4 px-4 py-3 rounded-xl font-semibold" href="#">
+                <i class="fa-solid fa-chart-simple w-5"></i> Dashboard Global
+            </a>
+            <a class="nav-link flex items-center gap-4 px-4 py-3 rounded-xl" href="#">
+                <i class="fa-regular fa-building w-5"></i> Condomínios
+            </a>
+            <a class="nav-link flex items-center gap-4 px-4 py-3 rounded-xl" href="#">
+                <i class="fa-solid fa-server w-5"></i> Dispositivos
+            </a>
+            <a class="nav-link flex items-center gap-4 px-4 py-3 rounded-xl" href="#">
+                <i class="fa-solid fa-satellite-dish w-5"></i> Agents
+            </a>
+            <a class="nav-link flex items-center gap-4 px-4 py-3 rounded-xl" href="#">
+                <i class="fa-solid fa-video w-5"></i> CFTV
+            </a>
+            <a class="nav-link flex items-center gap-4 px-4 py-3 rounded-xl" href="#">
+                <i class="fa-solid fa-network-wired w-5"></i> Infraestrutura
+            </a>
+            <a class="nav-link flex items-center justify-between px-4 py-3 rounded-xl" href="#">
+                <span class="flex items-center gap-4"><i class="fa-solid fa-triangle-exclamation w-5"></i> Ocorrências</span>
+                <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-lg">8</span>
+            </a>
+            <a class="nav-link flex items-center gap-4 px-4 py-3 rounded-xl" href="#">
+                <i class="fa-solid fa-terminal w-5"></i> SSH Manager
+            </a>
+            <a class="nav-link flex items-center gap-4 px-4 py-3 rounded-xl" href="#">
+                <i class="fa-solid fa-file-lines w-5"></i> Relatórios
+            </a>
+            <a class="nav-link flex items-center gap-4 px-4 py-3 rounded-xl" href="#">
+                <i class="fa-solid fa-gear w-5"></i> Configurações
+            </a>
+        </nav>
+
+        <div class="mt-auto card rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-sm font-bold text-white">Status do Sistema</p>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.9)]"></span>
+            </div>
+            <p class="text-emerald-400 text-sm font-semibold">
+                <i class="fa-solid fa-circle text-xs mr-2"></i>Operacional
+            </p>
+            <p class="text-xs text-slate-400 mt-2">Monitoramento ativo em todos os módulos.</p>
+        </div>
+
+        <p class="text-[11px] text-slate-600 mt-5">© 2026 Secticom NOC</p>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="xl:ml-[260px] w-full min-h-screen soft-grid">
+
+        <!-- TOPBAR -->
+        <header class="h-[74px] border-b border-slate-800/80 bg-[#050914]/90 backdrop-blur-xl px-5 sm:px-7 flex items-center justify-between sticky top-0 z-20">
+            <div class="text-sm min-w-0">
+                <span class="text-cyan-400"><i class="fa-solid fa-tower-broadcast mr-2"></i>NOC</span>
+                <span class="mx-3 text-slate-600">›</span>
+                <span class="text-white font-medium">Central de Condomínios</span>
+            </div>
+
+            <div class="flex items-center gap-3 sm:gap-5">
+                <div class="relative hidden md:block">
+                    <input class="bg-transparent border border-slate-700 rounded-xl px-4 py-3 w-72 outline-none text-sm focus:border-cyan-500/70" placeholder="Buscar condomínio, IP ou alerta...">
+                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-4 text-slate-400"></i>
+                </div>
+                <button class="relative w-10 h-10 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="absolute -top-1 -right-1 bg-cyan-400 text-slate-950 text-[10px] font-bold rounded-full px-1.5">12</span>
+                </button>
+                <div class="hidden sm:flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full border border-cyan-500 flex items-center justify-center text-cyan-400">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-white">Administrador</p>
+                        <p class="text-xs text-slate-400">NOC Global</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="p-5 sm:p-7 space-y-6">
+
+            <!-- TITLE -->
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white">Visão Geral dos Condomínios</h2>
+                    <p class="text-slate-400 mt-2">Resumo essencial de saúde, disponibilidade, alertas e comunicação dos ambientes monitorados.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-3">
+                    <button class="filter flex items-center gap-3 w-auto">
+                        <i class="fa-regular fa-clock"></i> Últimos 5 minutos
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </button>
+                    <button class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl px-5 font-bold h-[44px]">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+                <select class="filter"><option>Todos os condomínios</option></select>
+                <select class="filter"><option>Status geral</option><option>Saudável</option><option>Atenção</option><option>Crítico</option></select>
+                <select class="filter"><option>Região</option><option>Zona Norte</option><option>Zona Sul</option><option>Centro</option></select>
+                <select class="filter"><option>Tipo de ambiente</option><option>Residencial</option><option>Comercial</option><option>Misto</option></select>
+                <select class="filter"><option>Agent</option><option>Online</option><option>Offline</option></select>
+                <select class="filter"><option>Link</option><option>Online</option><option>Instável</option><option>Offline</option></select>
+                <select class="filter"><option>Prioridade</option><option>Alta</option><option>Média</option><option>Baixa</option></select>
+            </div>
+
+            <!-- MAIN SUMMARY -->
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+
+                <div class="card rounded-xl p-6 xl:col-span-4">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="metric-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                        <div>
+                            <h3 class="font-bold">Saúde Geral da Operação</h3>
+                            <p class="text-xs text-slate-500">Média consolidada dos condomínios</p>
+                        </div>
+                    </div>
+
+                    <svg class="gauge" viewBox="0 0 220 140">
+                        <path class="gauge-bg" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                        <path class="gauge-value" style="--offset:80.32; stroke:#f59e0b;" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                    </svg>
+
+                    <div class="text-center -mt-20 mb-8">
+                        <p class="text-4xl font-bold text-amber-400">68%</p>
+                        <p class="text-sm text-slate-400">Status geral: Atenção</p>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4 grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <p class="text-slate-400">Saudáveis</p>
+                            <p class="text-emerald-400 font-semibold">15</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400">Atenção</p>
+                            <p class="text-amber-400 font-semibold">3</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400">Críticos</p>
+                            <p class="text-red-400 font-semibold">2</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:col-span-2 space-y-4">
+                    <div class="card rounded-xl p-6 h-[calc(50%-8px)]">
+                        <div class="metric-icon mb-5"><i class="fa-solid fa-building-shield"></i></div>
+                        <p class="font-bold">Condomínios</p>
+                        <h3 class="text-3xl font-bold mt-5">20</h3>
+                        <p class="text-sm text-slate-400 mt-3">ambientes monitorados</p>
+                    </div>
+                    <div class="card rounded-xl p-6 h-[calc(50%-8px)]">
+                        <div class="metric-icon mb-5"><i class="fa-solid fa-microchip"></i></div>
+                        <p class="font-bold">Dispositivos</p>
+                        <h3 class="text-3xl font-bold mt-5">742</h3>
+                        <p class="text-sm text-cyan-400 mt-3">728 online / 14 offline</p>
+                    </div>
+                </div>
+
+                <div class="card rounded-xl p-6 xl:col-span-4">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="metric-icon"><i class="fa-solid fa-network-wired"></i></div>
+                        <div>
+                            <h3 class="font-bold">Disponibilidade dos Links</h3>
+                            <p class="text-xs text-slate-500">Rede, gateway, agent e comunicação</p>
+                        </div>
+                    </div>
+
+                    <svg class="gauge" viewBox="0 0 220 140">
+                        <path class="gauge-bg" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                        <path class="gauge-value" style="--offset:25.10; stroke:#10b981;" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                    </svg>
+
+                    <div class="text-center -mt-20 mb-8">
+                        <p class="text-4xl font-bold text-emerald-400">90%</p>
+                        <p class="text-sm text-slate-400">Links e agents estáveis</p>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4 grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <p class="text-slate-400">Agents ON</p>
+                            <p class="text-emerald-400 font-semibold">18</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400">Links instáveis</p>
+                            <p class="text-amber-400 font-semibold">1</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400">Links OFF</p>
+                            <p class="text-red-400 font-semibold">1</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:col-span-2 space-y-4">
+                    <div class="card rounded-xl p-6">
+                        <div class="metric-icon mb-5"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <p class="font-bold">Alertas Ativos</p>
+                        <h3 class="text-3xl font-bold mt-5 text-amber-400">19</h3>
+                        <p class="text-sm text-slate-400 mt-3">5 críticos / 14 atenção</p>
+                    </div>
+                    <div class="card rounded-xl p-6">
+                        <div class="metric-icon mb-5"><i class="fa-solid fa-gauge-high"></i></div>
+                        <p class="font-bold">Latência Média</p>
+                        <h3 class="text-3xl font-bold mt-5">34ms</h3>
+                        <p class="text-sm text-slate-400 mt-3">média dos ativos online</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- DONUTS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+                <div class="card rounded-xl p-6">
+                    <h3 class="font-bold mb-6"><i class="fa-solid fa-signal text-cyan-400 mr-2"></i>Status por Condomínio</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="donut" style="background: conic-gradient(#10b981 0 75%, #f59e0b 75% 90%, #ef4444 90% 100%);"></div>
+                        <div class="space-y-2 text-sm">
+                            <p><span class="text-emerald-400">●</span> Saudável</p>
+                            <p><span class="text-amber-400">●</span> Atenção</p>
+                            <p><span class="text-red-400">●</span> Crítico</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between">
+                        <span class="text-slate-400">Total</span><strong>20</strong>
+                    </div>
+                </div>
+
+                <div class="card rounded-xl p-6">
+                    <h3 class="font-bold mb-6"><i class="fa-solid fa-layer-group text-cyan-400 mr-2"></i>Tipos de Dispositivo</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="donut" style="background: conic-gradient(#0ea5e9 0 48%, #14b8a6 48% 68%, #f59e0b 68% 82%, #7c3aed 82% 100%);"></div>
+                        <div class="space-y-2 text-sm">
+                            <p><span class="text-sky-400">●</span> Câmeras</p>
+                            <p><span class="text-teal-400">●</span> Rede</p>
+                            <p><span class="text-amber-400">●</span> Controle</p>
+                            <p><span class="text-purple-400">●</span> Outros</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between">
+                        <span class="text-slate-400">Total</span><strong>742</strong>
+                    </div>
+                </div>
+
+                <div class="card rounded-xl p-6">
+                    <h3 class="font-bold mb-6"><i class="fa-solid fa-bell text-cyan-400 mr-2"></i>Alertas por Tipo</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="donut" style="background: conic-gradient(#ef4444 0 28%, #f59e0b 28% 55%, #0ea5e9 55% 78%, #7c3aed 78% 100%);"></div>
+                        <div class="space-y-2 text-sm">
+                            <p><span class="text-red-400">●</span> Offline</p>
+                            <p><span class="text-amber-400">●</span> Latência</p>
+                            <p><span class="text-blue-400">●</span> Sem imagem</p>
+                            <p><span class="text-purple-400">●</span> Agent</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between">
+                        <span class="text-slate-400">Total</span><strong>19</strong>
+                    </div>
+                </div>
+
+                <div class="card rounded-xl p-6">
+                    <h3 class="font-bold mb-6"><i class="fa-solid fa-shield-heart text-cyan-400 mr-2"></i>Prioridade Operacional</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="donut" style="background: conic-gradient(#ef4444 0 20%, #f59e0b 20% 48%, #10b981 48% 100%);"></div>
+                        <div class="space-y-2 text-sm">
+                            <p><span class="text-red-400">●</span> Alta</p>
+                            <p><span class="text-amber-400">●</span> Média</p>
+                            <p><span class="text-emerald-400">●</span> Baixa</p>
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-800 mt-5 pt-4 flex justify-between">
+                        <span class="text-slate-400">Ambientes</span><strong>20</strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CONDO GRID -->
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
+                <div>
+                    <h3 class="text-xl font-bold text-white">
+                        <i class="fa-solid fa-building-shield text-cyan-400 mr-2"></i>
+                        Condomínios em Monitoramento
+                    </h3>
+                    <p class="text-sm text-slate-500 mt-1">Cards resumidos para decisão rápida do operador.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button class="chip chip-info">Todos (20)</button>
+                    <button class="chip chip-danger">Críticos (2)</button>
+                    <button class="chip chip-warn">Atenção (3)</button>
+                    <button class="chip chip-ok">Saudáveis (15)</button>
+                </div>
+            </div>
+
+            <div id="condominios-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+
+            <!-- FOOTER METRICS -->
+            <div class="card rounded-xl p-6 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-6 text-center">
+                <div>
+                    <p class="text-slate-300 font-bold">Condomínios</p>
+                    <h3 class="text-3xl font-bold mt-3">20</h3>
+                    <p class="text-sm text-slate-400">ambientes ativos</p>
+                </div>
+                <div>
+                    <p class="text-slate-300 font-bold">Dispositivos</p>
+                    <h3 class="text-3xl font-bold mt-3">742</h3>
+                    <p class="text-sm text-slate-400">cadastrados</p>
+                </div>
+                <div>
+                    <p class="text-cyan-400 font-bold">Online</p>
+                    <h3 class="text-3xl font-bold mt-3 text-cyan-400">728</h3>
+                    <p class="text-sm text-cyan-400">98,1% do total</p>
+                </div>
+                <div>
+                    <p class="text-red-400 font-bold">Offline</p>
+                    <h3 class="text-3xl font-bold mt-3 text-red-400">14</h3>
+                    <p class="text-sm text-red-400">exigem atenção</p>
+                </div>
+                <div>
+                    <p class="text-amber-400 font-bold">Alertas</p>
+                    <h3 class="text-3xl font-bold mt-3 text-amber-400">19</h3>
+                    <p class="text-sm text-slate-400">ativos no NOC</p>
+                </div>
+                <div>
+                    <p class="text-emerald-400 font-bold">Agents Online</p>
+                    <h3 class="text-3xl font-bold mt-3 text-emerald-400">18</h3>
+                    <p class="text-sm text-slate-400">2 sem heartbeat</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+    const condominios = {{ condominios|tojson }};
+    console.log(condominios);
+
+    function offsetGauge(percent) {
+        return 251 - (251 * percent / 100);
+    }
+
+    function statusTextColor(status) {
+        if (status === "CRÍTICO") return "text-red-400";
+        if (status === "ATENÇÃO") return "text-amber-400";
+        return "text-emerald-400";
+    }
+
+    function smallStatus(status) {
+        if (status === "ONLINE") return "text-emerald-400";
+        if (status === "INSTÁVEL") return "text-amber-400";
+        return "text-red-400";
+    }
+
+    const grid = document.getElementById("condominios-grid");
+
+    condominios.forEach(c => {
+        grid.insertAdjacentHTML("beforeend", `
+            <article class="condo-card card rounded-xl overflow-hidden border ${c.borda} ${c.glow}">
+                <div class="p-4 border-b border-slate-800/70 flex items-center justify-between gap-3">
+                    <h4 class="font-bold text-white text-sm truncate" title="${c.nome}">${c.nome}</h4>
+                    <span class="chip ${c.chip}">${c.status}</span>
+                </div>
+
+                <div class="p-4 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-400">Saúde da Infra</span>
+                        <span class="text-sm font-bold font-mono ${statusTextColor(c.status)}">${c.saude}%</span>
+                    </div>
+
+                    <div class="relative h-[120px]">
+                        <svg class="mini-gauge" viewBox="0 0 220 140">
+                            <path class="mini-gauge-bg" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                            <path class="mini-gauge-value" style="--offset:${offsetGauge(c.saude)}; stroke:${c.cor};" d="M 30 115 A 80 80 0 0 1 190 115"/>
+                        </svg>
+
+                        <div class="absolute left-1/2 top-[56px] -translate-x-1/2 text-center">
+                            <p class="text-2xl font-bold font-mono" style="color:${c.cor};">${c.saude}%</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-wider">Health</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/70">
+                            <p class="text-slate-500 text-[10px] uppercase">Dispositivos</p>
+                            <p class="font-mono font-semibold text-slate-200 mt-1">
+                                <i class="fa-solid fa-microchip text-slate-500 text-[10px] mr-1"></i>
+                                ${c.dispositivos}
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/70">
+                            <p class="text-slate-500 text-[10px] uppercase">Offline</p>
+                            <p class="font-mono font-semibold ${c.offline > 0 ? "text-red-400" : "text-emerald-400"} mt-1">
+                                <i class="fa-solid fa-circle text-[8px] mr-1"></i>
+                                ${c.offline}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 text-[11px] font-mono">
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2">
+                            <p class="text-slate-500">Agent</p>
+                            <p class="${smallStatus(c.agent)} font-bold">${c.agent}</p>
+                        </div>
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2">
+                            <p class="text-slate-500">Link</p>
+                            <p class="${smallStatus(c.link)} font-bold">${c.link}</p>
+                        </div>
+                        <div class="bg-slate-950/70 border border-slate-800 rounded-lg p-2">
+                            <p class="text-slate-500">Ping</p>
+                            <p class="text-cyan-400 font-bold">${c.latencia}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-3 rounded-lg text-[11px] flex items-start gap-2 ${c.status === "CRÍTICO" ? "text-red-400" : c.status === "ATENÇÃO" ? "text-amber-400" : "text-emerald-400"}">
+                        <i class="fa-solid ${c.status === "SAUDÁVEL" ? "fa-circle-check" : "fa-triangle-exclamation"} mt-0.5"></i>
+                        <p class="truncate">${c.alerta}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-5 border-t border-slate-800/80 bg-[#050812] text-slate-400 text-center text-xs">
+                    <button title="Entrar" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                    </button>
+                    <a href="/dispositivos?empresa_id=${c.id}"
+                        title="Dispositivos"
+                        class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60">
+                            <i class="fa-solid fa-network-wired"></i>
+                    </a>
+                    <button title="SSH" class="py-2 hover:bg-slate-800 hover:text-cyan-400 transition-all border-r border-slate-800/60 font-mono text-[10px] font-bold">
+                        SSH
+                    </button>
+                    <button title="CFTV" class="py-2 hover:bg-slate-800 hover:text-white transition-all border-r border-slate-800/60">
+                        <i class="fa-solid fa-video"></i>
+                    </button>
+                    <button title="Métricas" class="py-2 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </button>
+                </div>
+            </article>
+        `);
+    });
+</script>
+
+</body>
+</html>

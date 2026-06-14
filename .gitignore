@@ -1,26 +1,27 @@
-# Ambiente virtual
-.venv/
-venv/
-
 # Python
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
+
+# Virtualenv
+.venv/
+
+# IDE
+.idea/
+.vscode/
 
 # Banco de dados
 *.db
-instance/
+*.sqlite
+*.sqlite3
+banco.db
 
-# Variáveis de ambiente
-.env
+# Backup
+*.sql
+backup/
+controlcam_backup.sql
 
-# Logs
+# Arquivos temporários
 *.log
-
-# Sistema
-.DS_Store
-
-# IDE
-.vscode/
-.idea/
+estrutura.txt
+requirements_novo.txt
