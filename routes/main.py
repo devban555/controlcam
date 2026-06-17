@@ -5,6 +5,7 @@ from flask import (
     session,
     redirect,
     url_for,
+    flash,
     jsonify
 )
 from routes.auth import login_required
@@ -24,77 +25,9 @@ main_bp = Blueprint("main", __name__)
 @main_bp.route("/")
 @login_required
 def index():
-    """
-        Renderiza o painel principal do sistema com status das câmeras e do agente.
-
-        Esta função:
-        - Identifica a empresa do usuário logado
-        - Verifica o status do agente (online/offline)
-        - Lista todas as câmeras da empresa
-        - Consulta o último resultado de ping de cada câmera
-        - Define status e latência das câmeras
-        - Dispara novos comandos de ping automaticamente (se necessário)
-        - Ordena as câmeras por prioridade de status
-        - Renderiza o dashboard principal
-
-        Fluxo:
-        1. Obtém usuário logado via sessão
-        2. Busca empresa vinculada ao usuário
-        3. Verifica status do agente via último heartbeat:
-            - < 60s → ON
-            - ≥ 60s → OFF
-        4. Busca todas as câmeras da empresa
-        5. Para cada câmera:
-            a. Busca último comando executado (ping)
-            b. Interpreta resultado:
-                - "ttl=" → Online
-                - sem resposta → Offline
-            c. Extrai latência via regex
-            d. Evita flood de comandos (verifica pendentes)
-            e. Cria novo comando de ping se necessário
-        6. Monta lista estruturada de câmeras
-        7. Ordena por prioridade:
-            Offline → Desconhecido → Sem teste → Online
-        8. Renderiza template com dados
-
-        Returns:
-            Response: Página HTML (index.html) com:
-                - lista de câmeras
-                - status do agente
-
-        Sessão:
-            - session["usuario_id"]: identifica usuário logado
-
-        Banco de Dados:
-            - usuarios → vínculo com empresa
-            - agentes → status via heartbeat
-            - cameras → lista de dispositivos
-            - comandos → histórico e fila de execução
-
-        Status de Câmeras:
-            - Online: resposta válida com TTL
-            - Offline: sem resposta válida
-            - Sem teste: nenhum comando executado ainda
-            - Desconhecido: agente offline
-
-        Lógica de Monitoramento:
-            - Sistema utiliza comandos 'ping' para verificar disponibilidade
-            - Evita duplicidade com verificação de comandos pendentes
-            - Execução é delegada ao agente
-
-        Observações:
-            - Usa parsing de texto do ping para determinar status
-            - Latência extraída via regex
-            - Apenas o último comando executado é considerado
-            - Assume existência de pelo menos um agente
-
-        Possíveis melhorias:
-            - Suporte a múltiplos agentes por empresa
-            - Cache de status para reduzir queries
-            - Estruturar resultado do ping em JSON
-            - Implementar timeout configurável
-            - Melhorar performance (evitar múltiplas queries por câmera)
-        """
+    return redirect(url_for("main.dashboard"))   
+ 
+       
 
     conn = get_db()
     cursor = conn.cursor()
@@ -221,7 +154,7 @@ def index():
     conn.commit()
     cursor.close()
 
-    return render_template("index.html", cameras=lista_cameras, agente_status=agente_status)
+    return render_template("dashboard.html",condominios=[], cameras=lista_cameras, agente_status=agente_status)
 
 
 # ==============================
