@@ -234,7 +234,8 @@
 <div class="min-h-screen flex">
 
     <!-- SIDEBAR -->
-    <aside class="sidebar w-[260px] fixed left-0 top-0 bottom-0 p-5 hidden xl:flex flex-col">
+    <aside id="sidebar"
+       class="sidebar w-[260px] fixed left-0 top-0 bottom-0 p-5 hidden xl:flex flex-col transition-all duration-300">
 
         <div class="flex items-center gap-3 mb-9">
             <div class="w-14 h-14 rounded-2xl border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-2xl shadow-[0_0_25px_rgba(34,211,238,.12)]">
@@ -296,15 +297,31 @@
     </aside>
 
     <!-- MAIN -->
-    <main class="xl:ml-[260px] w-full min-h-screen soft-grid">
+    <main id="mainContent"
+      class="xl:ml-[260px] w-full min-h-screen soft-grid transition-all duration-300">
 
         <!-- TOPBAR -->
         <header class="h-[74px] border-b border-slate-800/80 bg-[#050914]/90 backdrop-blur-xl px-5 sm:px-7 flex items-center justify-between sticky top-0 z-20">
-            <div class="text-sm min-w-0">
-                <span class="text-cyan-400"><i class="fa-solid fa-tower-broadcast mr-2"></i>NOC</span>
+            <div class="flex items-center gap-3">
+
+                <button id="toggleSidebar"
+                    class="w-10 h-10 rounded-xl border border-slate-700
+                        hover:bg-slate-800 transition">
+                    <i id="toggleIcon" class="fa-solid fa-bars"></i>
+                </button>
+
+                <div class="text-sm">
+                    <span class="text-cyan-400">
+                        <i class="fa-solid fa-tower-broadcast mr-2"></i>NOC
+                </span>
+
                 <span class="mx-3 text-slate-600">›</span>
-                <span class="text-white font-medium">Central de Condomínios</span>
+
+                <span class="text-white font-medium">
+                    Central de Condomínios
+                </span>
             </div>
+
 
             <div class="flex items-center gap-3 sm:gap-5">
                 <div class="relative hidden md:block">
@@ -699,6 +716,42 @@
             </article>
         `);
     });
+    // ===============================
+// Sidebar retrátil
+// ===============================
+
+const sidebar = document.getElementById("sidebar");
+const main = document.getElementById("mainContent");
+const toggle = document.getElementById("toggleSidebar");
+const icon = document.getElementById("toggleIcon");
+
+let sidebarOpen = true;
+
+toggle.addEventListener("click", () => {
+
+    sidebarOpen = !sidebarOpen;
+
+    if (sidebarOpen) {
+
+        sidebar.classList.remove("-translate-x-full");
+
+        main.classList.remove("xl:ml-0");
+        main.classList.add("xl:ml-[260px]");
+
+        icon.className = "fa-solid fa-bars";
+
+    } else {
+
+        sidebar.classList.add("-translate-x-full");
+
+        main.classList.remove("xl:ml-[260px]");
+        main.classList.add("xl:ml-0");
+
+        icon.className = "fa-solid fa-bars-staggered";
+
+    }
+
+});
 </script>
 
 </body>
